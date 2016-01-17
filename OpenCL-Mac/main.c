@@ -21,51 +21,11 @@
 	#include <OpenCL/opencl.h>
 #endif
 
+#include "file_io.h"
+#include "cl_util.h"
+
+/// Number of elements in the data set we will work with in parallel.
 const unsigned int DATA_SET_SIZE = 1024;
-
-/**
- Utility method for checking an error code as returned by 
- an OpenCL function. If that error code is not successful,
- then check_err(...) will print the msg and terminate
- with EXIT_FAILURE, if err is CL_SUCCESS, no such
- action will be performed.
- */
-void check_err(int err, const char * msg) {
-    // err is not succesfull => print the error and exit
-    if (err != CL_SUCCESS) {
-        printf("%s\n", msg);
-        exit(EXIT_FAILURE);
-    }
-}
-
-/**
- Utility method to read the given file name into a single
- character buffer. The caller will be responsible for
- freeing the returned memeory.
- */
-char * read_file(const char * filename) {
-    FILE * f = fopen(filename, "rb");
-    char * buffer;
-    size_t file_length;
-
-    if (!f) {
-        printf("failed to open file: %s\n", filename);
-        exit(EXIT_FAILURE);
-    }
-
-    // this will tell us how big of a buffer we need
-    fseek(f, 0, SEEK_END);
-    file_length = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    // allocate our buffer and read the data
-    buffer = malloc(file_length + 1); // +1 for NULL terminator
-    fread(buffer, file_length, 1, f);
-    buffer[file_length] = '\0';
-    fclose(f);
-
-    return buffer;
-}
 
 /**
  Application entry point. Here we will create the OpenCL context,
@@ -184,6 +144,7 @@ int main(int argc, const char ** argv) {
     /* -----------------------------------------------------------
      Application cleanup.
      ----------------------------------------------------------- */
+
     clReleaseMemObject(input);
     clReleaseMemObject(output);
     clReleaseProgram(program);
