@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B92CD7881C4B3998003E2909 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = B92CD7871C4B3998003E2909 /* main.c */; };
+		B97862581C4B4709005B142A /* kernels.cl in Sources */ = {isa = PBXBuildFile; fileRef = B97862571C4B4709005B142A /* kernels.cl */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,7 @@
 /* Begin PBXFileReference section */
 		B92CD7841C4B3998003E2909 /* OpenCL-Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OpenCL-Mac"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B92CD7871C4B3998003E2909 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		B97862571C4B4709005B142A /* kernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = kernels.cl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 		B92CD7861C4B3998003E2909 /* OpenCL-Mac */ = {
 			isa = PBXGroup;
 			children = (
+				B97862571C4B4709005B142A /* kernels.cl */,
 				B92CD7871C4B3998003E2909 /* main.c */,
 			);
 			path = "OpenCL-Mac";
@@ -119,6 +122,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B92CD7881C4B3998003E2909 /* main.c in Sources */,
+				B97862581C4B4709005B142A /* kernels.cl in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,6 +241,7 @@
 				B92CD78D1C4B3998003E2909 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
