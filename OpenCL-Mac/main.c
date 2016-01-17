@@ -15,7 +15,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <OpenCL/opencl.h>
+#ifdef GNU
+	#include <CL/cl.h>
+#else
+	#include <OpenCL/opencl.h>
+#endif
 
 const unsigned int DATA_SET_SIZE = 1024;
 
