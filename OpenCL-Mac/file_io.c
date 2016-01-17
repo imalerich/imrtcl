@@ -27,7 +27,7 @@ char * read_file(const char * filename) {
     fseek(f, 0, SEEK_SET);
 
     // allocate our buffer and read the data
-    buffer = malloc(file_length + 1); // +1 for NULL terminator
+    buffer = (char *)malloc(file_length + 1); // +1 for NULL terminator
     fread(buffer, file_length, 1, f);
     buffer[file_length] = '\0';
     fclose(f);
