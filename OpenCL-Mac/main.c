@@ -29,7 +29,7 @@ const unsigned int DATA_SET_SIZE = 1024;
 void check_err(int err, const char * msg) {
     // err is not succesfull => print the error and exit
     if (err != CL_SUCCESS) {
-        printf("%s", msg);
+        printf("%s\n", msg);
         exit(EXIT_FAILURE);
     }
 }
@@ -123,7 +123,7 @@ int main(int argc, const char ** argv) {
     check_err(err, "clBuildProgram(...)");
 
     // create the computer kernel in the program we wish to run
-    kernel = clCreateKernel(program, "sqare", &err);
+    kernel = clCreateKernel(program, "square", &err);
     check_err(err, "clCreateKernel(...)");
 
     // create the input and output arrays in our device memory
@@ -175,7 +175,7 @@ int main(int argc, const char ** argv) {
         correct += results[i] == data[i] * data[i];
     }
 
-    printf("Program finished with a score of (%d, %d).", correct, DATA_SET_SIZE);
+    printf("Program finished with a score of %d/%d.\n", correct, DATA_SET_SIZE);
 
     /* -----------------------------------------------------------
      Application cleanup.
