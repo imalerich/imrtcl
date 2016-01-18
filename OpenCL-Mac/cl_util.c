@@ -19,7 +19,8 @@
 void check_err(int err, const char * msg) {
     // err is not succesfull => print the error and exit
     if (err != CL_SUCCESS) {
-        printf("%s\n", msg);
+        printf("err: %d\n", err);
+        printf("\t%s\n", msg);
         exit(EXIT_FAILURE);
     }
 }

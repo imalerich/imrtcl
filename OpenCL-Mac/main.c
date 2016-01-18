@@ -26,12 +26,12 @@
 #include "vector.h"
 
 // the number of particles in our simulation
-const unsigned NUM_PARTICLES    = 128;
-const unsigned N_STEP           = 100;
-const unsigned N_BURST          = 20;
+const unsigned NUM_PARTICLES    = 256;
+const unsigned N_STEP           = 100000;
+const unsigned N_BURST          = N_STEP / 100;
 
-const float delta_time  = 0.0001;
-const float eps         = 0.0001;
+const float delta_time  = 0.01;
+const float eps         = 0.01;
 
 // OpenCL device and program representations
 cl_device_id device_id;
@@ -51,7 +51,7 @@ void nbody_init(const unsigned n, struct vector4 * pos, struct vector4 * vel) {
     const static unsigned width_x = 2000.0f;;
     const static float min_y = -1000.0f;
     const static unsigned width_y = 2000.0f;
-    const static unsigned max_mass = 2;
+    const static unsigned max_mass = 1000;
 
     // initialize each particle with a random position, mass, and velocity
     for (unsigned i = 0; i < n; i++) {
@@ -59,7 +59,10 @@ void nbody_init(const unsigned n, struct vector4 * pos, struct vector4 * vel) {
                               rand() % width_y + min_y, // y-pos
                               0.0f,                     // z-pos
                               rand() % max_mass);       // mass
-        vel[i] = vector4_init(0.0f, 0.0f, 0.0f, 0.0f);  // initial velocity
+        vel[i] = vector4_init(rand() % 10,
+                              rand() % 10,
+                              0.0f,
+                              0.0f);  // initial velocity
     }
 }
 
@@ -71,7 +74,7 @@ void nbody_init(const unsigned n, struct vector4 * pos, struct vector4 * vel) {
  the y coordinate of the particle.
  */
 void nbody_output(const char * file_name, const unsigned n, struct vector4 * pos) {
-    FILE * f = fopen(file_name, "w+");
+    FILE * f = fopen(file_name, "w");
 
     // write all simulated positions to a csv file
     for (unsigned i = 0; i < n; i++) {
@@ -110,6 +113,7 @@ void output_memory(const char * file_name, cl_mem pos_old) {
     err = clEnqueueReadBuffer(command_queue, pos_old, CL_TRUE, 0, size, pos1, 0, NULL, NULL);
     check_err(err, "clEnqueueReadBuffer(...)");
 
+    clFinish(command_queue);
     nbody_output(file_name, NUM_PARTICLES, pos1);
 }
 
@@ -163,16 +167,16 @@ int main(int argc, const char ** argv) {
     size_t size = sizeof(struct vector4) * NUM_PARTICLES;
     pos_old = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, NULL);
     pos_new = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, NULL);
-    cur_vel = clCreateBuffer(context, CL_MEM_WRITE_ONLY, size, NULL, NULL);
+    cur_vel = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, NULL);
 
     init_memory(&pos_old, &pos_new, &cur_vel);
-    output_memory("init.csv", pos_new);
 
     // set the arguments for the kernel
     // these are the actual parameters to the kernel function in kernels.cl
     err = clSetKernelArg(kernel, 0, sizeof(float), &delta_time);
     err |= clSetKernelArg(kernel, 1, sizeof(float), &eps);
     err |= clSetKernelArg(kernel, 4, sizeof(cl_mem), &cur_vel);
+    err |= clSetKernelArg(kernel, 5, size, NULL);
     check_err(err, "clSetKernelArg(...)");
 
     // get the maximum work group size for program execution
@@ -193,18 +197,24 @@ int main(int argc, const char ** argv) {
     clFinish(command_queue);
     for (unsigned step = 0; step < N_STEP; step += N_BURST) {
         for (unsigned burst = 0; burst < N_BURST; burst += 2) {
+            // tick
             err = clSetKernelArg(kernel, 2, sizeof(cl_mem), &pos_old);
             err |= clSetKernelArg(kernel, 3, sizeof(cl_mem), &pos_new);
             check_err(err, "clSetKernelArg(...)");
 
-            clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
+            err = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,
+                                         &global, &local, 0, NULL, NULL);
+            check_err(err, "clEnqueueNDRangeKernel(...)");
             clFinish(command_queue);
 
+            // tock
             err = clSetKernelArg(kernel, 2, sizeof(cl_mem), &pos_new);
             err |= clSetKernelArg(kernel, 3, sizeof(cl_mem), &pos_old);
             check_err(err, "clSetKernelArg(...)");
 
-            clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
+            err = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,
+                                         &global, &local, 0, NULL, NULL);
+            check_err(err, "clEnqueueNDRangeKernel(...)");
             clFinish(command_queue);
         }
     }
