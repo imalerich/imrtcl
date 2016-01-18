@@ -77,7 +77,7 @@ int main(int argc, const char ** argv) {
     check_err(err, "clCreateCommandQueue(...)");
 
     // create the compute program from 'kernels.cl'
-    char * buffer = read_file("/Users/imm/Development/OpenCL-Mac/OpenCL-Mac/kernels.cl");
+    char * buffer = read_file("OpenCL-Mac/kernels.cl");
     program = clCreateProgramWithSource(context, 1, (const char **)&buffer, NULL, &err);
     check_err(err, "clCreateProgramWithSource(...)");
     free(buffer); // program already read, we don't need the buffer anymore

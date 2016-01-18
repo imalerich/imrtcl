@@ -1,7 +1,7 @@
 OBJ = main.o cl_util.o file_io.o
 
 all: $(OBJ)
-	g++ -o cl $(OBJ) -lOpenCL -std=iso9899:2011
+	g++ -o cl $(OBJ) -lOpenCL
 
 main.o:
 	g++ -c OpenCL-Mac/main.c
