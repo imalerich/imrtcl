@@ -1,3 +1,4 @@
 cl
 *.o
 *.swp
+*.csv

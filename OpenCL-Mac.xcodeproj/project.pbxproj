@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B92CD7881C4B3998003E2909 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = B92CD7871C4B3998003E2909 /* main.c */; };
+		B95A374B1C4D313C009F4B89 /* vector.c in Sources */ = {isa = PBXBuildFile; fileRef = B95A37491C4D313C009F4B89 /* vector.c */; };
 		B97862581C4B4709005B142A /* kernels.cl in Sources */ = {isa = PBXBuildFile; fileRef = B97862571C4B4709005B142A /* kernels.cl */; };
 		B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A41C4C5D1D002E1ACF /* file_io.c */; };
 		B9B4C9A91C4C5DEE002E1ACF /* cl_util.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */; };
@@ -28,6 +29,8 @@
 /* Begin PBXFileReference section */
 		B92CD7841C4B3998003E2909 /* OpenCL-Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OpenCL-Mac"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B92CD7871C4B3998003E2909 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		B95A37491C4D313C009F4B89 /* vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vector.c; sourceTree = "<group>"; };
+		B95A374A1C4D313C009F4B89 /* vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vector.h; sourceTree = "<group>"; };
 		B97862571C4B4709005B142A /* kernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = kernels.cl; sourceTree = "<group>"; };
 		B9B4C9A41C4C5D1D002E1ACF /* file_io.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = file_io.c; sourceTree = "<group>"; };
 		B9B4C9A51C4C5D1D002E1ACF /* file_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_io.h; sourceTree = "<group>"; };
@@ -71,6 +74,8 @@
 				B9B4C9A51C4C5D1D002E1ACF /* file_io.h */,
 				B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */,
 				B9B4C9A81C4C5DEE002E1ACF /* cl_util.h */,
+				B95A37491C4D313C009F4B89 /* vector.c */,
+				B95A374A1C4D313C009F4B89 /* vector.h */,
 			);
 			path = "OpenCL-Mac";
 			sourceTree = "<group>";
@@ -134,6 +139,7 @@
 				B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */,
 				B92CD7881C4B3998003E2909 /* main.c in Sources */,
 				B9B4C9A91C4C5DEE002E1ACF /* cl_util.c in Sources */,
+				B95A374B1C4D313C009F4B89 /* vector.c in Sources */,
 				B97862581C4B4709005B142A /* kernels.cl in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
