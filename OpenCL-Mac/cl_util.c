@@ -8,10 +8,10 @@
 
 #include <stdio.h>
 
-#ifdef GNU
-    #include <CL/cl.h>
-#else
+#ifdef XCODE
     #include <OpenCL/opencl.h>
+#else
+    #include <CL/cl.h>
 #endif
 
 #include "cl_util.h"

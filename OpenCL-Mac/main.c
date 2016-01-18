@@ -15,10 +15,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef GNU
-	#include <CL/cl.h>
-#else
+#ifdef XCODE
 	#include <OpenCL/opencl.h>
+#else
+	#include <CL/cl.h>
 #endif
 
 #include "file_io.h"

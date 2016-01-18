@@ -223,6 +223,7 @@
 		B92CD78C1C4B3998003E2909 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS[arch=*]" = XCODE;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -230,6 +231,7 @@
 		B92CD78D1C4B3998003E2909 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS[arch=*]" = XCODE;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
