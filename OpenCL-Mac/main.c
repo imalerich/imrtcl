@@ -20,7 +20,7 @@
 
 // the number of particles in our simulation
 const unsigned NUM_PARTICLES    = 256;
-const unsigned N_STEP           = 100000;
+const unsigned N_STEP           = 1000;
 const unsigned N_BURST          = N_STEP / 100;
 
 const float delta_time  = 0.01;
@@ -112,7 +112,7 @@ int main(int argc, const char ** argv) {
     size_t global;                  // global domain size for the calculations
     size_t local;                   // local domain size for the calculations
 
-    const char * file_name = "ray_tracer.cl";
+    const char * file_name = "OpenCL-Mac/kernels/nbody_sim.cl";
     init_cl(&file_name, 1);
 
     // device memory references

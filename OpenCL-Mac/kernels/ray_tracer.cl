@@ -1,3 +1,8 @@
+// function declarations
+float8 calculate_ray (float4 camera_pos, float4 camera_look,
+        float4 camera_right, float4 camera_up);
+bool intersect_ray_sphere(float8 ray, float4 sphere);
+
 /* ---------------------------------------------------
  Generates an image buffer by ray tracing each pixel
  for the scene given as parameters to this kernel.
@@ -11,14 +16,14 @@
  Components .xyz represent the center coordinate while
  the .w component represent the radius of the sphere.
  --------------------------------------------------- */
-__kernel ray_tracer(
-        __constant float4 camera_pos,
-        __constant float4 camera_look,
-        __constant float4 camera_right,
-        __constant float4 camera_up,
+__kernel void ray_tracer(
+        float4 camera_pos,
+        float4 camera_look,
+        float4 camera_right,
+        float4 camera_up,
 
         __global float4 * surfaces,
-        __global int n_surfaces,
+        int n_surfaces,
         __global float4 * output
     ) {
 
@@ -50,11 +55,11 @@ __kernel ray_tracer(
  Takes the input camera vectors and calculates the
  ray that will be used for a particular work item.
  --------------------------------------------------- */
-float8 calculate_ray(
-        __constant float4 camera_pos,
-        __constant float4 camera_look,
-        __constant float4 camera_right,
-        __constant float4 camera_up
+float8 calculate_ray (
+        float4 camera_pos,
+        float4 camera_look,
+        float4 camera_right,
+        float4 camera_up
     ) {
 
     // the output image resolution -> global work size
@@ -87,7 +92,7 @@ float8 calculate_ray(
 bool intersect_ray_sphere(float8 ray, float4 sphere) {
     float4 center = {sphere.xyz, 0.0f};
     float a = pow(length(ray.hi), 2);
-    float b = 2.0f * dot(ray.lo, ray.hi) - dot(dir, center);
+    float b = 2.0f * dot(ray.lo, ray.hi) - dot(ray.hi, center);
     float c = pow(length(center - ray.lo), 2) - pow(sphere.w, 2);
     float delta = pow(b, 2) - (4 * a * c);
 
@@ -96,7 +101,7 @@ bool intersect_ray_sphere(float8 ray, float4 sphere) {
     } else {
         float d = -(b + sqrt(delta)) / (2 * a);
 
-        if (abs(delta) > 0) {
+        if (delta > 0) {
             return 1;
         } else {
             return 0;
