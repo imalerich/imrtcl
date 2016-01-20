@@ -9,6 +9,21 @@
 #ifndef CL_UTIL_H
 #define CL_UTIL_H
 
+#include <stdio.h>
+
+#ifdef XCODE
+    #include <OpenCL/opencl.h>
+#else
+    #include <CL/cl.h>
+#endif
+
+// OpenCL device and program representations
+extern cl_device_id device_id;
+extern cl_context context;
+extern cl_command_queue command_queue;
+extern cl_program program;
+extern cl_kernel kernel;
+
 /**
  Utility method for checking an error code as returned by 
  an OpenCL function. If that error code is not successful,
@@ -21,5 +36,16 @@
  \return void
  */
 void check_err(int err, const char * msg);
+
+/**
+ Setup the OpenCL device and program representations.
+For each reference we need, we will call the appropriate
+ OpenCL initialization function, then check if
+ any error occurred.
+ 
+ \param sources Array of file names to be used for the program.
+ \param count The number of items in the input array.
+ */
+void init_cl(const char ** sources, int count);
 
 #endif

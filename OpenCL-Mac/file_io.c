@@ -34,3 +34,19 @@ char * read_file(const char * filename) {
 
     return buffer;
 }
+
+size_t file_length(const char * filename) {
+    FILE * f = fopen(filename, "rb");
+    size_t file_length;
+
+    if (!f) {
+        printf("failed to open file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    fseek(f, 0, SEEK_END);
+    file_length = ftell(f);
+    fclose(f);
+
+    return file_length;
+}

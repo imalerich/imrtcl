@@ -19,4 +19,11 @@
  */
 char * read_file(const char * filename);
 
+/**
+ Determines the length (in bytes) of the input file.
+ \param filename Name of the file to read.
+ \return The length (in bytes) of the file.
+ */
+size_t file_length(const char * filename);
+
 #endif

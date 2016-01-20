@@ -1,41 +1,4 @@
 /* ---------------------------------------------------
- Computes the square of each item in the
- 'input' array of floating point values, then stores
- the result in the 'output' array. The size of
- each array is given by the 'count' parameter.
- --------------------------------------------------- */
-__kernel void square(
-        __global float * input,
-        __global float * output,
-        const unsigned int count
-    ) {
-
-    // takes a single element of 'input' and stores the square in 'output'
-    int i = get_global_id(0);
-    if (i < count) {
-        output[i] = input[i] * input[i];
-    }
-}
-
-/* ---------------------------------------------------
- Writes 'hello world' to the output buffer. If the
- working set size is greater than the output string,
- extra characters will be filled with '-'.
- --------------------------------------------------- */
-__kernel void hello(
-        __global char * output
-    ) {
-
-    // writes 'hello world!\n' to the output buffer
-    int i = get_global_id(0);
-    if (i < 13) {
-        output[i] = ("hello world!\n")[i];
-    } else {
-        output[i] = '-';
-    }
-}
-
-/* ---------------------------------------------------
  Performs an N-Body simulation on the input data set.
  The 4 dimmensional input vectors pos_old and pos_new
  will contain the {x, y, z} coordinates of the particle 

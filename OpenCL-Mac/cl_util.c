@@ -6,15 +6,16 @@
 //  Copyright © 2016 Ian Malerich. All rights reserved.
 //
 
-#include <stdio.h>
-
-#ifdef XCODE
-    #include <OpenCL/opencl.h>
-#else
-    #include <CL/cl.h>
-#endif
+#include <string.h>
 
 #include "cl_util.h"
+#include "file_io.h"
+
+cl_device_id device_id;
+cl_context context;
+cl_command_queue command_queue;
+cl_program program;
+cl_kernel kernel;
 
 void check_err(int err, const char * msg) {
     // err is not succesfull => print the error and exit
@@ -23,4 +24,47 @@ void check_err(int err, const char * msg) {
         printf("\t%s\n", msg);
         exit(EXIT_FAILURE);
     }
+}
+
+void init_cl(const char ** sources, int count) {
+    int err = CL_SUCCESS;
+
+    // connect to the compute device
+    err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);
+    check_err(err, "clGetDeviceIDs(...)");
+
+    // create the working context
+    context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &err);
+    check_err(err, "clCreateContext(...)");
+
+    // next up is the command queue
+    command_queue = clCreateCommandQueue(context, device_id, 0, &err);
+    check_err(err, "clCreateCommandQueue(...)");
+
+    // create a single source buffer for the program from the input files
+    size_t length = 0;
+    for (int i = 0; i < count; i++) {
+        length += file_length(sources[i]);
+    }
+
+    char * buffer = malloc(length);
+    buffer[0] = '\0';
+    for (int i = 0; i < count; i++) {
+        char * tmp = read_file(sources[i]);
+        strcat(buffer, tmp);
+        free(tmp);
+    }
+
+    // create the compute program from 'kernels.cl'
+    program = clCreateProgramWithSource(context, 1, (const char **)&buffer, NULL, &err);
+    check_err(err, "clCreateProgramWithSource(...)");
+    free(buffer); // program already read, we don't need the buffer anymore
+
+    // compile the program for our device
+    err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+    check_err(err, "clBuildProgram(...)");
+
+    // create the computer kernel in the program we wish to run
+    kernel = clCreateKernel(program, "nbody", &err);
+    check_err(err, "clCreateKernel(...)");
 }
