@@ -20,8 +20,8 @@ cl_kernel kernel;
 void check_err(int err, const char * msg) {
     // err is not succesfull => print the error and exit
     if (err != CL_SUCCESS) {
-        printf("err: %d\n", err);
-        printf("\t%s\n", msg);
+        fprintf(stderr, "err: %d\n", err);
+        fprintf(stderr, "\t%s\n", msg);
         exit(EXIT_FAILURE);
     }
 }
@@ -65,6 +65,13 @@ void init_cl(const char ** sources, int count) {
     check_err(err, "clBuildProgram(...)");
 
     // create the computer kernel in the program we wish to run
-    kernel = clCreateKernel(program, "nbody", &err);
+    kernel = clCreateKernel(program, "ray_tracer", &err);
     check_err(err, "clCreateKernel(...)");
+}
+
+void release_cl() {
+    clReleaseProgram(program);
+    clReleaseKernel(kernel);
+    clReleaseCommandQueue(command_queue);
+    clReleaseContext(context);
 }

@@ -48,4 +48,10 @@ For each reference we need, we will call the appropriate
  */
 void init_cl(const char ** sources, int count);
 
+/**
+ Releases all memory that was allocated by the
+ init_cl function call.
+ */
+void release_cl();
+
 #endif

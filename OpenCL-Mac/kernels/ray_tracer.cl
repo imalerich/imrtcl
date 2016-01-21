@@ -1,4 +1,4 @@
-// function declarations
+// function prototypes
 float8 calculate_ray (float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
 bool intersect_ray_sphere(float8 ray, float4 sphere);

@@ -8,9 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		B92CD7881C4B3998003E2909 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = B92CD7871C4B3998003E2909 /* main.c */; };
+		B94200A71C5152F50069D951 /* gl_util.c in Sources */ = {isa = PBXBuildFile; fileRef = B94200A51C5152F50069D951 /* gl_util.c */; };
 		B9438FA71C4F183C007BA831 /* nbody_sim.cl in Sources */ = {isa = PBXBuildFile; fileRef = B9438FA51C4F183C007BA831 /* nbody_sim.cl */; };
 		B9438FA81C4F183C007BA831 /* ray_tracer.cl in Sources */ = {isa = PBXBuildFile; fileRef = B9438FA61C4F183C007BA831 /* ray_tracer.cl */; };
 		B95A374B1C4D313C009F4B89 /* vector.c in Sources */ = {isa = PBXBuildFile; fileRef = B95A37491C4D313C009F4B89 /* vector.c */; };
+		B9A960D71C5029CE004936B5 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960D61C5029CE004936B5 /* libglfw3.a */; };
+		B9A960D91C5029E3004936B5 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960D81C5029E2004936B5 /* Cocoa.framework */; };
+		B9A960DB1C5029EB004936B5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960DA1C5029EB004936B5 /* OpenGL.framework */; };
+		B9A960DD1C5029FA004936B5 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960DC1C5029FA004936B5 /* IOKit.framework */; };
+		B9A960DF1C502A06004936B5 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960DE1C502A06004936B5 /* CoreVideo.framework */; };
 		B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A41C4C5D1D002E1ACF /* file_io.c */; };
 		B9B4C9A91C4C5DEE002E1ACF /* cl_util.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */; };
 /* End PBXBuildFile section */
@@ -30,10 +36,19 @@
 /* Begin PBXFileReference section */
 		B92CD7841C4B3998003E2909 /* OpenCL-Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OpenCL-Mac"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B92CD7871C4B3998003E2909 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		B94200A51C5152F50069D951 /* gl_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gl_util.c; sourceTree = "<group>"; };
+		B94200A61C5152F50069D951 /* gl_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gl_util.h; sourceTree = "<group>"; };
+		B94200B21C515CE00069D951 /* simple.fs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = simple.fs; path = shaders/simple.fs; sourceTree = "<group>"; };
+		B94200B31C515CE00069D951 /* simple.vs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = simple.vs; path = shaders/simple.vs; sourceTree = "<group>"; };
 		B9438FA51C4F183C007BA831 /* nbody_sim.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; name = nbody_sim.cl; path = kernels/nbody_sim.cl; sourceTree = "<group>"; };
 		B9438FA61C4F183C007BA831 /* ray_tracer.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; name = ray_tracer.cl; path = kernels/ray_tracer.cl; sourceTree = "<group>"; };
 		B95A37491C4D313C009F4B89 /* vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vector.c; sourceTree = "<group>"; };
 		B95A374A1C4D313C009F4B89 /* vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vector.h; sourceTree = "<group>"; };
+		B9A960D61C5029CE004936B5 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = /usr/local/lib/libglfw3.a; sourceTree = "<absolute>"; };
+		B9A960D81C5029E2004936B5 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		B9A960DA1C5029EB004936B5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		B9A960DC1C5029FA004936B5 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		B9A960DE1C502A06004936B5 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		B9B4C9A41C4C5D1D002E1ACF /* file_io.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = file_io.c; sourceTree = "<group>"; };
 		B9B4C9A51C4C5D1D002E1ACF /* file_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_io.h; sourceTree = "<group>"; };
 		B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cl_util.c; sourceTree = "<group>"; };
@@ -45,6 +60,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9A960DF1C502A06004936B5 /* CoreVideo.framework in Frameworks */,
+				B9A960DD1C5029FA004936B5 /* IOKit.framework in Frameworks */,
+				B9A960D91C5029E3004936B5 /* Cocoa.framework in Frameworks */,
+				B9A960DB1C5029EB004936B5 /* OpenGL.framework in Frameworks */,
+				B9A960D71C5029CE004936B5 /* libglfw3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,6 +74,7 @@
 		B92CD77B1C4B3998003E2909 = {
 			isa = PBXGroup;
 			children = (
+				B94200AB1C515C8B0069D951 /* Dependencies */,
 				B92CD7861C4B3998003E2909 /* OpenCL-Mac */,
 				B92CD7851C4B3998003E2909 /* Products */,
 			);
@@ -70,9 +91,49 @@
 		B92CD7861C4B3998003E2909 /* OpenCL-Mac */ = {
 			isa = PBXGroup;
 			children = (
+				B94200B11C515CC80069D951 /* Util */,
+				B94200AE1C515CAA0069D951 /* Kernels */,
+				B94200AD1C515CA60069D951 /* Shaders */,
+				B92CD7871C4B3998003E2909 /* main.c */,
+			);
+			path = "OpenCL-Mac";
+			sourceTree = "<group>";
+		};
+		B94200AB1C515C8B0069D951 /* Dependencies */ = {
+			isa = PBXGroup;
+			children = (
+				B9A960DE1C502A06004936B5 /* CoreVideo.framework */,
+				B9A960DC1C5029FA004936B5 /* IOKit.framework */,
+				B9A960DA1C5029EB004936B5 /* OpenGL.framework */,
+				B9A960D81C5029E2004936B5 /* Cocoa.framework */,
+				B9A960D61C5029CE004936B5 /* libglfw3.a */,
+			);
+			name = Dependencies;
+			sourceTree = "<group>";
+		};
+		B94200AD1C515CA60069D951 /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				B94200B21C515CE00069D951 /* simple.fs */,
+				B94200B31C515CE00069D951 /* simple.vs */,
+			);
+			name = Shaders;
+			sourceTree = "<group>";
+		};
+		B94200AE1C515CAA0069D951 /* Kernels */ = {
+			isa = PBXGroup;
+			children = (
 				B9438FA51C4F183C007BA831 /* nbody_sim.cl */,
 				B9438FA61C4F183C007BA831 /* ray_tracer.cl */,
-				B92CD7871C4B3998003E2909 /* main.c */,
+			);
+			name = Kernels;
+			sourceTree = "<group>";
+		};
+		B94200B11C515CC80069D951 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				B94200A51C5152F50069D951 /* gl_util.c */,
+				B94200A61C5152F50069D951 /* gl_util.h */,
 				B9B4C9A41C4C5D1D002E1ACF /* file_io.c */,
 				B9B4C9A51C4C5D1D002E1ACF /* file_io.h */,
 				B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */,
@@ -80,7 +141,7 @@
 				B95A37491C4D313C009F4B89 /* vector.c */,
 				B95A374A1C4D313C009F4B89 /* vector.h */,
 			);
-			path = "OpenCL-Mac";
+			name = Util;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -139,6 +200,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B94200A71C5152F50069D951 /* gl_util.c in Sources */,
 				B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */,
 				B92CD7881C4B3998003E2909 /* main.c in Sources */,
 				B9438FA71C4F183C007BA831 /* nbody_sim.cl in Sources */,
@@ -233,7 +295,13 @@
 		B92CD78C1C4B3998003E2909 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				"GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS[arch=*]" = XCODE;
+				HEADER_SEARCH_PATHS = /usr/local/include/;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/glew/1.13.0/lib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -241,7 +309,13 @@
 		B92CD78D1C4B3998003E2909 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				"GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS[arch=*]" = XCODE;
+				HEADER_SEARCH_PATHS = /usr/local/include/;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/glew/1.13.0/lib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
