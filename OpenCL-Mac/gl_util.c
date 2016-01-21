@@ -47,7 +47,7 @@ const GLuint elements[] = {
 // private function prototypes
 void init_screen_rect();
 void init_shaders();
-void check_shader_compile();
+void check_shader_compile(const char * filename, GLuint shader);
 void init_screen_tex();
 
 void init_gl(const char * title, int v_sync) {
@@ -156,7 +156,7 @@ void init_screen_tex() {
     unsigned w = screen_w * sample_rate;
     unsigned h = screen_h * sample_rate;
     unsigned c = w * h;
-    struct vector4 * pixels = malloc(c * sizeof(struct vector4));
+    struct vector4 * pixels = (struct vector4 *)malloc(c * sizeof(struct vector4));
 
     // initialize a simple gradient image
     for (int y = 0; y < h; y++) {

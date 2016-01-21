@@ -47,7 +47,7 @@ void init_cl(const char ** sources, int count) {
         length += file_length(sources[i]);
     }
 
-    char * buffer = malloc(length);
+    char * buffer = (char *)malloc(length);
     buffer[0] = '\0';
     for (int i = 0; i < count; i++) {
         char * tmp = read_file(sources[i]);
