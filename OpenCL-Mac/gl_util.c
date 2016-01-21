@@ -156,17 +156,8 @@ void init_screen_tex() {
     unsigned w = screen_w * sample_rate;
     unsigned h = screen_h * sample_rate;
     unsigned c = w * h;
-    struct vector4 * pixels = (struct vector4 *)malloc(c * sizeof(struct vector4));
 
-    // initialize a simple gradient image
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            int i = y * (screen_w * sample_rate) + x;
-            pixels[i] = vector4_init(x/(float)w, 0.2f, y/(float)h, 1.0f);
-        }
-    }
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGBA, GL_FLOAT, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGBA, GL_FLOAT, 0);
 }
 
 void check_shader_compile(const char * filename, GLuint shader) {
