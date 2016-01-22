@@ -48,6 +48,7 @@
 		B95A374A1C4D313C009F4B89 /* vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vector.h; sourceTree = "<group>"; };
 		B98039641C51C1E500B3345F /* libGLEW.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libGLEW.a; path = /usr/local/lib/libGLEW.a; sourceTree = "<absolute>"; };
 		B98039661C51C27700B3345F /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
+		B98039681C51DEA100B3345F /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		B9A960D61C5029CE004936B5 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = /usr/local/lib/libglfw3.a; sourceTree = "<absolute>"; };
 		B9A960D81C5029E2004936B5 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		B9A960DA1C5029EB004936B5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -80,6 +81,7 @@
 		B92CD77B1C4B3998003E2909 = {
 			isa = PBXGroup;
 			children = (
+				B98039681C51DEA100B3345F /* GLKit.framework */,
 				B94200AB1C515C8B0069D951 /* Dependencies */,
 				B92CD7861C4B3998003E2909 /* OpenCL-Mac */,
 				B92CD7851C4B3998003E2909 /* Products */,

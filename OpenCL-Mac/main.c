@@ -41,22 +41,21 @@ int main(int argc, const char ** argv) {
     global = 0;
 
 	// create the OpenCL reference to our OpenGL texture
-	cl_mem tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, screen_tex, &err);
-	fprintf(stderr, "clCreateFromGLTexture(...)\n");
+	cl_mem tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+                                       0, screen_tex, &err);
 	check_err(err, "clCreateFromGLTexture");
 
     /* -----------------------------------------------------------
      Main runtime loop. Here we will update an OpenGL texture
      buffer using OpenCL, then swap the OpenGL display buffers.
      ----------------------------------------------------------- */
-	fprintf(stderr, "preparing for while(...)\n");
 
     while (!glfwWindowShouldClose(window)) {
 		// perform the ray tracing in OpenCL
 		glFinish();
 		clEnqueueAcquireGLObjects(command_queue, 1, &tex, 0, 0, NULL);
-		clFinish(command_queue);
 		clEnqueueReleaseGLObjects(command_queue, 1, &tex, 0, 0, NULL);
+		clFinish(command_queue);
 
 		// refresh the OpenGL context with the new texture updates
         glClearColor(0, 0, 0, 1);

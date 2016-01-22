@@ -14,6 +14,10 @@
 
 #include <GLFW/glfw3.h>
 
+#ifdef XCODE
+#include <OpenGL/OpenGL.h>
+#endif
+
 extern GLFWwindow * window;
 extern unsigned screen_w;
 extern unsigned screen_h;

@@ -8,6 +8,7 @@
 
 #include <string.h>
 
+#include "gl_util.h"
 #include "cl_util.h"
 #include "file_io.h"
 
@@ -33,8 +34,21 @@ void init_cl(const char ** sources, int count) {
     err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);
     check_err(err, "clGetDeviceIDs(...)");
 
+    // set the platform specific context properties for OpenGL + OpenCL sharing
+#ifdef XCODE
+    cl_context_properties ctx_prop[] = {
+        CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
+        (cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
+        0};
+
+#else
+    // TODO - Linux
+    cl_context_properties ctx_prop[] = { 0 };
+    
+#endif
+
     // create the working context
-    context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &err);
+    context = clCreateContext(ctx_prop, 1, &device_id, NULL, NULL, &err);
     check_err(err, "clCreateContext(...)");
 
     // next up is the command queue
