@@ -37,7 +37,7 @@ extern cl_kernel kernel;
  \param msg Message to output if an error occurs.
  \return void
  */
-void check_err(int err, const char * msg);
+void cl_check_err(int err, const char * msg);
 
 /**
  Setup the OpenCL device and program representations.

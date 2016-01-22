@@ -18,7 +18,7 @@ cl_command_queue command_queue;
 cl_program program;
 cl_kernel kernel;
 
-void check_err(int err, const char * msg) {
+void cl_check_err(int err, const char * msg) {
     // err is not succesfull => print the error and exit
     if (err != CL_SUCCESS) {
         fprintf(stderr, "err: %d\n", err);
@@ -32,7 +32,7 @@ void init_cl(const char ** sources, int count) {
 
     // connect to the compute device
     err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);
-    check_err(err, "clGetDeviceIDs(...)");
+    cl_check_err(err, "clGetDeviceIDs(...)");
 
     // set the platform specific context properties for OpenGL + OpenCL sharing
 #ifdef XCODE
@@ -49,11 +49,11 @@ void init_cl(const char ** sources, int count) {
 
     // create the working context
     context = clCreateContext(ctx_prop, 1, &device_id, NULL, NULL, &err);
-    check_err(err, "clCreateContext(...)");
+    cl_check_err(err, "clCreateContext(...)");
 
     // next up is the command queue
     command_queue = clCreateCommandQueue(context, device_id, 0, &err);
-    check_err(err, "clCreateCommandQueue(...)");
+    cl_check_err(err, "clCreateCommandQueue(...)");
 
     // create a single source buffer for the program from the input files
     size_t length = 0;
@@ -71,16 +71,16 @@ void init_cl(const char ** sources, int count) {
 
     // create the compute program from 'kernels.cl'
     program = clCreateProgramWithSource(context, 1, (const char **)&buffer, NULL, &err);
-    check_err(err, "clCreateProgramWithSource(...)");
+    cl_check_err(err, "clCreateProgramWithSource(...)");
     free(buffer); // program already read, we don't need the buffer anymore
 
     // compile the program for our device
     err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-    check_err(err, "clBuildProgram(...)");
+    cl_check_err(err, "clBuildProgram(...)");
 
     // create the computer kernel in the program we wish to run
-    kernel = clCreateKernel(program, "ray_tracer", &err);
-    check_err(err, "clCreateKernel(...)");
+    kernel = clCreateKernel(program, "gl_sample", &err);
+    cl_check_err(err, "clCreateKernel(...)");
 }
 
 void release_cl() {

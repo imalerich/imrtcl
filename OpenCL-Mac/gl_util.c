@@ -16,8 +16,8 @@
 #include "vector.h"
 
 GLFWwindow * window;
-unsigned screen_w = 800;
-unsigned screen_h = 600;
+unsigned screen_w = 512;
+unsigned screen_h = 512;
 unsigned sample_rate = 1;
 GLuint screen_tex;
 
@@ -156,7 +156,15 @@ void init_screen_tex() {
     unsigned w = screen_w * sample_rate;
     unsigned h = screen_h * sample_rate;
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_FLOAT, NULL);
+    struct vector4 * data = malloc(sizeof(struct vector4) * w * h);
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            data[y * w + x] = vector4_init(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_FLOAT, data);
+    free(data);
 }
 
 void check_shader_compile(const char * filename, GLuint shader) {
