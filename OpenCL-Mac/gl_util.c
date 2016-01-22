@@ -16,8 +16,8 @@
 #include "vector.h"
 
 GLFWwindow * window;
-unsigned screen_w = 512;
-unsigned screen_h = 512;
+unsigned screen_w = 800;
+unsigned screen_h = 600;
 unsigned sample_rate = 1;
 GLuint screen_tex;
 

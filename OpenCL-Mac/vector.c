@@ -12,6 +12,10 @@ struct vector4 vector4() {
     return (struct vector4) {0.0f, 0.0f, 0.0f, 0.0f};
 }
 
+struct vector4 vector3_init(float x, float y, float z) {
+    return (struct vector4) {x, y, z, 0.0};
+}
+
 struct vector4 vector4_init(float x, float y, float z, float w) {
     return (struct vector4) {x, y, z, w};
 }

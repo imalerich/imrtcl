@@ -17,6 +17,7 @@ struct vector4 {
 };
 
 struct vector4 vector4();
+struct vector4 vector3_init(float x, float y, float z);
 struct vector4 vector4_init(float x, float y, float z, float w);
 
 #endif
