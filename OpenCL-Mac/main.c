@@ -39,7 +39,7 @@ int main(int argc, const char ** argv) {
     init_cl(&ray_tracer_filename, 1);
 
 	// create the OpenCL reference to our OpenGL texture
-	tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+	tex = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
                                        0, screen_tex, &err);
 	cl_check_err(err, "clCreateFromGLTexture");
 

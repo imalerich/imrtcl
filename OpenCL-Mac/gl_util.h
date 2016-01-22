@@ -15,7 +15,9 @@
 #include <GLFW/glfw3.h>
 
 #ifdef __APPLE__
-#include <OpenGL/OpenGL.h>
+	#include <OpenGL/OpenGL.h>
+#else
+	#include <GL/glx.h>
 #endif
 
 extern GLFWwindow * window;

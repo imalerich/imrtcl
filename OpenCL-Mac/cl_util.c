@@ -43,12 +43,12 @@ void init_cl(const char ** sources, int count) {
 
 #else
     cl_platform_id platform;
-    err = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 0, NULL, NULL);
-    cl_check_err(err, "clGetPlatformInfo(...)");
+	err = clGetPlatformIDs(1, &platform, NULL);
+    cl_check_err(err, "clGetPlatformIDs(...)");
 
     cl_context_properties ctx_prop[] = {
         CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
-        CL_GL_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+        CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
         0};
     
