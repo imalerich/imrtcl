@@ -9,16 +9,21 @@
 #ifndef GL_UTIL_H
 #define GL_UTIL_H
 
-#ifndef XCODE
-    #define GLEW_STATIC
-    #include <GL/glew.h>
-#endif
+#define GLEW_STATIC
+#include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
 
 extern GLFWwindow * window;
 extern unsigned screen_w;
 extern unsigned screen_h;
+
+/// serves as a multiplier to the screen_w and the screen_h
+/// when generating the screen_tex, the resulting pixel count
+/// will be screen_w * screen_h * sample_rate^2
+/// the default value of sample_rate is 1
+extern unsigned sample_rate;
+extern GLuint screen_tex;
 
 /**
  Initializes an OpenGL context using screen 

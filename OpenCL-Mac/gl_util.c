@@ -13,10 +13,13 @@
 
 #include "gl_util.h"
 #include "file_io.h"
+#include "vector.h"
 
 GLFWwindow * window;
 unsigned screen_w = 800;
 unsigned screen_h = 600;
+unsigned sample_rate = 1;
+GLuint screen_tex;
 
 GLenum gl_err;
 
@@ -30,10 +33,10 @@ GLuint shader_prog;
 
 // array of vertices describing the entire screen
 const float vertices[] = {
-    -1.0f,  1.0f, // Top-Left
-     1.0f,  1.0f, // Top-Right
-     1.0f, -1.0f, // Bottom-Right
-    -1.0f, -1.0f  // Bottom-Left
+    -1.0f,  1.0f,   0.0f, 0.0f, // Top-Left
+     1.0f,  1.0f,   1.0f, 0.0f, // Top-Right
+     1.0f, -1.0f,   1.0f, 1.0f, // Bottom-Right
+    -1.0f, -1.0f,   0.0f, 1.0f  // Bottom-Left
 };
 
 const GLuint elements[] = {
@@ -45,6 +48,7 @@ const GLuint elements[] = {
 void init_screen_rect();
 void init_shaders();
 void check_shader_compile();
+void init_screen_tex();
 
 void init_gl(const char * title, int v_sync) {
     if (!glfwInit()) {
@@ -62,25 +66,26 @@ void init_gl(const char * title, int v_sync) {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(v_sync);
 
-#ifndef XCODE
-    // intialize glew (not necessary on Mac OS X)
+    // intialize glew
     glewExperimental = GL_TRUE;
-    glewInit();
-#endif
+    int glew_err = GLEW_OK;
+
+    if ((glew_err = glewInit()) != GLEW_OK) {
+        printf("error - glewInit():\nt\t%s\n", glewGetErrorString(gl_err));
+        exit(EXIT_FAILURE);
+    }
+
+    // clear the error buffer, just trust me on this
+    glGetError();
 
     // generate our vertex array object
-#ifdef XCODE
-    glGenVertexArraysAPPLE(1, &vao);
-    gl_check_errors("glGenVertexArrays(...)");
-    glBindVertexArrayAPPLE(vao);
-#else
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-#endif
 
     // initialize the rendering objects that will be used for ray tracing
     init_screen_rect();
     init_shaders();
+    init_screen_tex();
     gl_check_errors("init_gl(...)");
 }
 
@@ -120,22 +125,48 @@ void init_shaders() {
     glAttachShader(shader_prog, vshader);
     glAttachShader(shader_prog, fshader);
 
-#ifdef XCODE
-    glBindFragDataLocationEXT(shader_prog, 0, "OutColor");
-#else
     glBindFragDataLocation(shader_prog, 0, "OutColor");
-#endif
 
     glLinkProgram(shader_prog);
     glUseProgram(shader_prog);
 
     // tell the shader where each input is located on the vertex buffer
     GLint pos_att = glGetAttribLocation(shader_prog, "position");
-    glVertexAttribPointer(pos_att, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(pos_att, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
     glEnableVertexAttribArray(pos_att);
+
+    GLint tex_att = glGetAttribLocation(shader_prog, "texcoord");
+    glVertexAttribPointer(tex_att, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
+                          (void *)(2 * sizeof(float)));
+    glEnableVertexAttribArray(tex_att);
 
     free(vs_source);
     free(fs_source);
+}
+
+void init_screen_tex() {
+    glGenTextures(1, &screen_tex);
+    glBindTexture(GL_TEXTURE_2D, screen_tex);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    unsigned w = screen_w * sample_rate;
+    unsigned h = screen_h * sample_rate;
+    unsigned c = w * h;
+    struct vector4 * pixels = malloc(c * sizeof(struct vector4));
+
+    // initialize a simple gradient image
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            int i = y * (screen_w * sample_rate) + x;
+            pixels[i] = vector4_init(x/(float)w, 0.2f, y/(float)h, 1.0f);
+        }
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGBA, GL_FLOAT, pixels);
 }
 
 void check_shader_compile(const char * filename, GLuint shader) {

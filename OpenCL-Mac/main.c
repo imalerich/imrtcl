@@ -19,6 +19,9 @@
 #include "cl_util.h"
 #include "vector.h"
 
+const char * window_title = "RayTracer - OpenCL";
+const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
+
 /**
  Application entry point. Here we will create the OpenCL context,
  load a sample program, and test the results for a given set of data.
@@ -28,10 +31,8 @@ int main(int argc, const char ** argv) {
     size_t global;                  // global domain size for the calculations
     size_t local;                   // local domain size for the calculations
 
-    init_gl("RayTracer - OpenCL", 1);
-
-    const char * file_name = "OpenCL-Mac/kernels/ray_tracer.cl";
-    init_cl(&file_name, 1);
+    init_gl(window_title, 1);
+    init_cl(&ray_tracer_filename, 1);
 
     // get the maximum work group size for program execution
     err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE,
@@ -45,8 +46,9 @@ int main(int argc, const char ** argv) {
      ----------------------------------------------------------- */
 
     while (!glfwWindowShouldClose(window)) {
-        // TODO
-        glClearColor(1, 0.5, 1, 1);
+        // TODO - ray tracing goes here
+
+        glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
         update_screen();

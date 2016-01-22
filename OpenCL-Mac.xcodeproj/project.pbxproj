@@ -12,6 +12,8 @@
 		B9438FA71C4F183C007BA831 /* nbody_sim.cl in Sources */ = {isa = PBXBuildFile; fileRef = B9438FA51C4F183C007BA831 /* nbody_sim.cl */; };
 		B9438FA81C4F183C007BA831 /* ray_tracer.cl in Sources */ = {isa = PBXBuildFile; fileRef = B9438FA61C4F183C007BA831 /* ray_tracer.cl */; };
 		B95A374B1C4D313C009F4B89 /* vector.c in Sources */ = {isa = PBXBuildFile; fileRef = B95A37491C4D313C009F4B89 /* vector.c */; };
+		B98039651C51C1E500B3345F /* libGLEW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B98039641C51C1E500B3345F /* libGLEW.a */; };
+		B98039671C51C27700B3345F /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B98039661C51C27700B3345F /* OpenCL.framework */; };
 		B9A960D71C5029CE004936B5 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960D61C5029CE004936B5 /* libglfw3.a */; };
 		B9A960D91C5029E3004936B5 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960D81C5029E2004936B5 /* Cocoa.framework */; };
 		B9A960DB1C5029EB004936B5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960DA1C5029EB004936B5 /* OpenGL.framework */; };
@@ -44,6 +46,8 @@
 		B9438FA61C4F183C007BA831 /* ray_tracer.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; name = ray_tracer.cl; path = kernels/ray_tracer.cl; sourceTree = "<group>"; };
 		B95A37491C4D313C009F4B89 /* vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vector.c; sourceTree = "<group>"; };
 		B95A374A1C4D313C009F4B89 /* vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vector.h; sourceTree = "<group>"; };
+		B98039641C51C1E500B3345F /* libGLEW.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libGLEW.a; path = /usr/local/lib/libGLEW.a; sourceTree = "<absolute>"; };
+		B98039661C51C27700B3345F /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		B9A960D61C5029CE004936B5 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = /usr/local/lib/libglfw3.a; sourceTree = "<absolute>"; };
 		B9A960D81C5029E2004936B5 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		B9A960DA1C5029EB004936B5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -60,10 +64,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B98039671C51C27700B3345F /* OpenCL.framework in Frameworks */,
 				B9A960DF1C502A06004936B5 /* CoreVideo.framework in Frameworks */,
 				B9A960DD1C5029FA004936B5 /* IOKit.framework in Frameworks */,
 				B9A960D91C5029E3004936B5 /* Cocoa.framework in Frameworks */,
 				B9A960DB1C5029EB004936B5 /* OpenGL.framework in Frameworks */,
+				B98039651C51C1E500B3345F /* libGLEW.a in Frameworks */,
 				B9A960D71C5029CE004936B5 /* libglfw3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -102,11 +108,13 @@
 		B94200AB1C515C8B0069D951 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
+				B98039661C51C27700B3345F /* OpenCL.framework */,
 				B9A960DE1C502A06004936B5 /* CoreVideo.framework */,
 				B9A960DC1C5029FA004936B5 /* IOKit.framework */,
 				B9A960DA1C5029EB004936B5 /* OpenGL.framework */,
 				B9A960D81C5029E2004936B5 /* Cocoa.framework */,
 				B9A960D61C5029CE004936B5 /* libglfw3.a */,
+				B98039641C51C1E500B3345F /* libGLEW.a */,
 			);
 			name = Dependencies;
 			sourceTree = "<group>";
@@ -296,12 +304,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ENABLE_MODULES = NO;
 				"GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS[arch=*]" = XCODE;
 				HEADER_SEARCH_PATHS = /usr/local/include/;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					/usr/local/Cellar/glew/1.13.0/lib,
-				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -310,12 +316,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ENABLE_MODULES = NO;
 				"GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS[arch=*]" = XCODE;
 				HEADER_SEARCH_PATHS = /usr/local/include/;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					/usr/local/Cellar/glew/1.13.0/lib,
-				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
