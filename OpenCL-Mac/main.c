@@ -68,7 +68,7 @@ int main(int argc, const char ** argv) {
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
     // set the camera arguments
-    err = clSetKernelArg(kernel, 0, sizeof(struct vector4), &cam_pos);
+    err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &cam_pos);
     err |= clSetKernelArg(kernel, 1, sizeof(struct vector4), &cam_look);
     err |= clSetKernelArg(kernel, 2, sizeof(struct vector4), &cam_right);
     err |= clSetKernelArg(kernel, 3, sizeof(struct vector4), &cam_up);
@@ -78,7 +78,7 @@ int main(int argc, const char ** argv) {
     err |= clSetKernelArg(kernel, 6, sizeof(int), &num_surfaces);
 
     // set the output reference
-    err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &tex);
+    //err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
     float time = 0.0f;
@@ -86,7 +86,7 @@ int main(int argc, const char ** argv) {
     while (!glfwWindowShouldClose(window)) {
 		glFinish();
 
-        render_cl(time += 1.5/60.0f);
+        //render_cl(time += 1.5/60.0f);
         present_gl();
     }
 
