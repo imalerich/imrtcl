@@ -14,7 +14,7 @@
 
 #include <GLFW/glfw3.h>
 
-#ifdef XCODE
+#ifdef __APPLE__
 #include <OpenGL/OpenGL.h>
 #endif
 

@@ -86,7 +86,7 @@ int main(int argc, const char ** argv) {
     while (!glfwWindowShouldClose(window)) {
 		glFinish();
 
-        render_cl(time += 2/60.0f);
+        render_cl(time += 1.5/60.0f);
         present_gl();
     }
 
@@ -105,7 +105,7 @@ void render_cl(float time) {
     const size_t global[] = {screen_w * sample_rate, screen_h * sample_rate};
     const size_t local[] = {1, 1};
 
-    struct vector4 light_pos = vector4_init(3 * sin(time), 5.0, 3 * cos(time) + 3.0, 0.0);
+    struct vector4 light_pos = vector4_init(3 * sin(time), 0.0, 3 * cos(time) + 3.0, 0.0);
     err = clSetKernelArg(kernel, 4, sizeof(struct vector4), &light_pos);
     cl_check_err(err, "clSetKernelArg(...)");
 

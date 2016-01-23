@@ -35,15 +35,22 @@ void init_cl(const char ** sources, int count) {
     cl_check_err(err, "clGetDeviceIDs(...)");
 
     // set the platform specific context properties for OpenGL + OpenCL sharing
-#ifdef XCODE
+#ifdef __APPLE__
     cl_context_properties ctx_prop[] = {
         CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
         (cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
         0};
 
 #else
-    // TODO - Linux
-    cl_context_properties ctx_prop[] = { 0 };
+    cl_platform_id platform;
+    err = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 0, NULL, NULL);
+    cl_check_err(err, "clGetPlatformInfo(...)");
+
+    cl_context_properties ctx_prop[] = {
+        CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+        CL_GL_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
+        0};
     
 #endif
 

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 
-#ifdef XCODE
+#ifdef __APPLE__
     #include <OpenCL/opencl.h>
     #include <OpenCL/cl_gl.h>
 #else

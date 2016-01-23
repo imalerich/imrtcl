@@ -18,7 +18,7 @@
 GLFWwindow * window;
 unsigned screen_w = 800;
 unsigned screen_h = 600;
-unsigned sample_rate = 1;
+unsigned sample_rate = 2;
 GLuint screen_tex;
 
 GLenum gl_err;
