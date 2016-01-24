@@ -4,6 +4,7 @@
 float8 calculate_ray (float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
+float4 point_on_sphere(float4 sphere, float4 rand);
 
 /* ---------------------------------------------------
  Generates an image buffer by ray tracing each pixel
@@ -19,15 +20,23 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
  the .w component represent the radius of the sphere.
  --------------------------------------------------- */
 __kernel void ray_tracer(
+        // camera information
         float4 camera_pos,
         float4 camera_look,
         float4 camera_right,
         float4 camera_up,
 
+        // scene information
         float4 light_pos,
-
         __global float4 * surfaces,
         int n_surfaces,
+
+        // random number generator
+        __global float4 * rand,
+        int n_rand,
+        int seed,
+
+        // kernel output
         write_only image2d_t output
     ) {
 
@@ -41,23 +50,47 @@ __kernel void ray_tracer(
 
     float8 ray = calculate_ray(camera_pos, camera_look, camera_right, camera_up);
 
-    bool hit = 0;
+    int hit = -1;
     float4 norm, intersect;
     for (int i = 0; i < n_surfaces; i++) {
         if (intersect_ray_sphere(ray, surfaces[i], &intersect, &norm)) {
-            hit = 1;
+            hit = i;
             break;
         }
     }
 
-    if (hit) {
-        float4 l_dir = normalize(light_pos - intersect);
-        float d = max(dot(l_dir, norm), 10/255.0f);
+    if (hit >= 0) {
+        float d = 0.0;
+
+        // check if the light is visible from this point
+        int l_samples = light_pos.w > 0.0 ? 512 : 1;
+        for (int l = 0; l < l_samples; l++) {
+            float4 sample_pos = point_on_sphere(light_pos, rand[(seed + l) % n_rand]);
+
+            float4 l_dir = normalize(sample_pos - intersect);
+            float sample_d = max(dot(l_dir, norm), 10/255.0f);
+
+            // for each surface
+            for (int i = 0; i < n_surfaces; i++) {
+                if (intersect_ray_sphere((float8){intersect, l_dir},
+                                                     surfaces[i], 0, 0)) {
+                    sample_d = 10/255.0f;
+                    break;
+                }
+            }
+
+            // add this samples contribution to the overall lighting
+            d += sample_d / (float)l_samples;
+        }
 
         write_imagef(output, (int2){x_pos, y_pos}, (float4)(d, d, d, 1.0));
     } else {
         write_imagef(output, (int2){x_pos, y_pos}, (float4){49/255.0, 51/255.0, 71/255.0, 1.0});
     }
+}
+
+float4 point_on_sphere(float4 sphere, float4 rand) {
+    return normalize((float4){rand.xyz, 0.0}) * (float4)sphere.w + (float4){sphere.xyz, 0.0};
 }
 
 /* ---------------------------------------------------
@@ -119,9 +152,11 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
             d = (d0 < EPSILON) || (d1 < EPSILON) ? max(d0, d1) : min(d0, d1);
         }
 
-        if (delta > EPSILON) {
-            (*intersect) = ray.lo + d * ray.hi;
-            (*norm) = normalize(*intersect - center);
+        if (d > EPSILON) {
+            if (intersect && norm) {
+                (*intersect) = ray.lo + d * ray.hi;
+                (*norm) = normalize(*intersect - center);
+            }
 
             return 1;
         } else {

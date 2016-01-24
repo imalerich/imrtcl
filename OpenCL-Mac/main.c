@@ -20,6 +20,7 @@
 #include "cl_util.h"
 #include "vector.h"
 
+const static int RAND_COUNT = 1024;
 const char * window_title = "RayTracer - OpenCL";
 const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
 
@@ -55,20 +56,35 @@ int main(int argc, const char ** argv) {
     struct vector4 cam_up = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
 
     // surface data
-    int num_surfaces = 1;
+    int num_surfaces = 2;
     struct vector4 * spheres = (struct vector4 *)malloc(sizeof(struct vector4) * num_surfaces);
-    for (int i = 0; i < 4; i++) {
-        spheres[i] = vector4_init(0, 0, 3, 1.0);
+    spheres[0] = vector4_init(-0, 0, 3, 0.4);
+    spheres[1] = vector4_init( 1.1, 0, 5, 1.0);
+
+    float * rands = (float *)malloc(sizeof(float) * RAND_COUNT);
+    for (int i = 0; i < RAND_COUNT; i++) {
+        int mil = pow(10, 6);
+        rands[i] = (float)(2.0 * (rand() % mil)/(float)mil - 1.0);
     }
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                     num_surfaces * sizeof(struct vector4), NULL, NULL);
+                                     num_surfaces * sizeof(struct vector4), NULL, &err);
+    cl_check_err(err, "clCreateBuffer(...)");
     err = clEnqueueWriteBuffer(command_queue, surfaces, CL_TRUE, 0,
                                num_surfaces * sizeof(struct vector4), spheres, 0, NULL, NULL);
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
+    cl_mem rand = clCreateBuffer(context, CL_MEM_READ_ONLY, RAND_COUNT * sizeof(float), NULL, &err);
+    cl_check_err(err, "clCreateBuffer(...)");
+    err = clEnqueueWriteBuffer(command_queue, rand, CL_TRUE, 0, RAND_COUNT * sizeof(float),
+                               rands, 0, NULL, NULL);
+    cl_check_err(err, "clEnqueueWriteBuffer(...)");
+
+    free(spheres);
+    free(rands);
+
     // set the camera arguments
-    err = clSetKernelArg(kernel, 0, sizeof(struct vector4), &cam_pos);
+    err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &cam_pos);
     err |= clSetKernelArg(kernel, 1, sizeof(struct vector4), &cam_look);
     err |= clSetKernelArg(kernel, 2, sizeof(struct vector4), &cam_right);
     err |= clSetKernelArg(kernel, 3, sizeof(struct vector4), &cam_up);
@@ -77,17 +93,25 @@ int main(int argc, const char ** argv) {
     err |= clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
     err |= clSetKernelArg(kernel, 6, sizeof(int), &num_surfaces);
 
+    // set random number properties
+    int n_rand = RAND_COUNT/4;
+    err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &rand);
+    err |= clSetKernelArg(kernel, 8, sizeof(int), &n_rand);
+
     // set the output reference
-    err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &tex);
+    err |= clSetKernelArg(kernel, 10, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
     float time = 0.0f;
+    glFinish();
+//    render_cl(time += 1/60.0f);
+    render_cl(time = 3.6);
 
     while (!glfwWindowShouldClose(window)) {
-		glFinish();
-
-        render_cl(time += 1.5/60.0f);
         present_gl();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
     /* -----------------------------------------------------------
@@ -103,10 +127,12 @@ int main(int argc, const char ** argv) {
 void render_cl(float time) {
     static int err = CL_SUCCESS;
     const size_t global[] = {screen_w * sample_rate, screen_h * sample_rate};
-    const size_t local[] = {1, 1};
+    const size_t local[] = {8, 8};
 
-    struct vector4 light_pos = vector4_init(3 * sin(time), 0.0, 3 * cos(time) + 3.0, 0.0);
-    err = clSetKernelArg(kernel, 4, sizeof(struct vector4), &light_pos);
+    int seed = rand();
+    struct vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 0.5);
+    err  = clSetKernelArg(kernel, 4, sizeof(struct vector4), &light_pos);
+    err |= clSetKernelArg(kernel, 9, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
 
     err = clEnqueueAcquireGLObjects(command_queue, 1, &tex, 0, 0, NULL);
@@ -126,7 +152,4 @@ void present_gl() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     update_screen();
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
 }
