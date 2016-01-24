@@ -12,7 +12,7 @@
 #include "cl_util.h"
 #include "file_io.h"
 
-cl_device_id device_id;
+cl_device_id device_id = 0;
 cl_context context;
 cl_command_queue command_queue;
 cl_program program;
@@ -43,12 +43,12 @@ void init_cl(const char ** sources, int count) {
 
 #else
     cl_platform_id platform;
-    err = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 0, NULL, NULL);
-    cl_check_err(err, "clGetPlatformInfo(...)");
+	err = clGetPlatformIDs(1, &platform, NULL);
+    cl_check_err(err, "clGetPlatformIDs(...)");
 
     cl_context_properties ctx_prop[] = {
-        CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
-        CL_GL_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+        CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window),
+        CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetX11Display(),
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
         0};
     

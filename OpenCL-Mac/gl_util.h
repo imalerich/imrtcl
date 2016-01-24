@@ -15,8 +15,16 @@
 #include <GLFW/glfw3.h>
 
 #ifdef __APPLE__
-#include <OpenGL/OpenGL.h>
+	#define GLFW_EXPOSE_NATIVE_COCOA
+	#define GLFW_EXPOSE_NATIVE_NSGL
+	#include <OpenGL/OpenGL.h>
+#else
+	#define GLFW_EXPOSE_NATIVE_X11
+	#define GLFW_EXPOSE_NATIVE_GLX
+	#include <GL/glx.h>
 #endif
+
+#include <GLFW/glfw3native.h>
 
 extern GLFWwindow * window;
 extern unsigned screen_w;

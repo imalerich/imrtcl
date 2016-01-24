@@ -20,7 +20,7 @@
 #include "cl_util.h"
 #include "vector.h"
 
-const static int RAND_COUNT = 1024;
+const static int RAND_COUNT = 4096;
 const char * window_title = "RayTracer - OpenCL";
 const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
 
