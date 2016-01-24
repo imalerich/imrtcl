@@ -61,12 +61,6 @@ int main(int argc, const char ** argv) {
     spheres[0] = vector4_init(-0, 0, 3, 0.4);
     spheres[1] = vector4_init( 1.1, 0, 5, 1.0);
 
-    float * rands = (float *)malloc(sizeof(float) * RAND_COUNT);
-    for (int i = 0; i < RAND_COUNT; i++) {
-        int mil = pow(10, 6);
-        rands[i] = (float)(2.0 * (rand() % mil)/(float)mil - 1.0);
-    }
-
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      num_surfaces * sizeof(struct vector4), NULL, &err);
     cl_check_err(err, "clCreateBuffer(...)");
@@ -74,14 +68,7 @@ int main(int argc, const char ** argv) {
                                num_surfaces * sizeof(struct vector4), spheres, 0, NULL, NULL);
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
-    cl_mem rand = clCreateBuffer(context, CL_MEM_READ_ONLY, RAND_COUNT * sizeof(float), NULL, &err);
-    cl_check_err(err, "clCreateBuffer(...)");
-    err = clEnqueueWriteBuffer(command_queue, rand, CL_TRUE, 0, RAND_COUNT * sizeof(float),
-                               rands, 0, NULL, NULL);
-    cl_check_err(err, "clEnqueueWriteBuffer(...)");
-
     free(spheres);
-    free(rands);
 
     // set the camera arguments
     err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &cam_pos);
@@ -93,19 +80,14 @@ int main(int argc, const char ** argv) {
     err |= clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
     err |= clSetKernelArg(kernel, 6, sizeof(int), &num_surfaces);
 
-    // set random number properties
-    int n_rand = RAND_COUNT/4;
-    err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &rand);
-    err |= clSetKernelArg(kernel, 8, sizeof(int), &n_rand);
-
     // set the output reference
-    err |= clSetKernelArg(kernel, 10, sizeof(cl_mem), &tex);
+    err |= clSetKernelArg(kernel, 8, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
     float time = 0.0f;
     glFinish();
 //    render_cl(time += 1/60.0f);
-    render_cl(time = 3.6);
+    render_cl(time = 3.5);
 
     while (!glfwWindowShouldClose(window)) {
         present_gl();
@@ -130,9 +112,9 @@ void render_cl(float time) {
     const size_t local[] = {8, 8};
 
     int seed = rand();
-    struct vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 0.5);
+    struct vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 1.0);
     err  = clSetKernelArg(kernel, 4, sizeof(struct vector4), &light_pos);
-    err |= clSetKernelArg(kernel, 9, sizeof(int), &seed);
+    err |= clSetKernelArg(kernel, 7, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
 
     err = clEnqueueAcquireGLObjects(command_queue, 1, &tex, 0, 0, NULL);
