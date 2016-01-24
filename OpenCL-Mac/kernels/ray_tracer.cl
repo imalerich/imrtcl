@@ -4,8 +4,8 @@
 float8 calculate_ray (float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
-float4 point_on_sphere(float4 sphere, uint seed);
-uint rand(uint seed);
+float4 point_on_sphere(float4 sphere, uint * seed);
+uint rand(uint * seed);
 
 /* ---------------------------------------------------
  Generates an image buffer by ray tracing each pixel
@@ -32,11 +32,11 @@ __kernel void ray_tracer(
         __global float4 * surfaces,
         int n_surfaces,
 
-        // random number generator
+        // seed for the random number generator
         int seed,
 
         // kernel output
-        write_only image2d_t output
+        __write_only image2d_t output
     ) {
 
     // the output image resolution -> global work size
@@ -46,9 +46,6 @@ __kernel void ray_tracer(
     // the local (x, y) coordinate described relative to the global work size
     int x_pos = get_global_id(0);
     int y_pos = get_global_id(1);
-
-    // seed the internal random number generator
-    seed = seed;
 
     float8 ray = calculate_ray(camera_pos, camera_look, camera_right, camera_up);
 
@@ -65,9 +62,9 @@ __kernel void ray_tracer(
         float d = 0.0;
 
         // check if the light is visible from this point
-        int l_samples = light_pos.w > 0.0 ? 512 : 1;
+        int l_samples = light_pos.w > 0.0 ? 32 : 1;
         for (int l = 0; l < l_samples; l++) {
-            float4 sample_pos = point_on_sphere(light_pos, seed + l);
+            float4 sample_pos = point_on_sphere(light_pos, &seed);
 
             float4 l_dir = normalize(sample_pos - intersect);
             float sample_d = max(dot(l_dir, norm), 10/255.0f);
@@ -91,12 +88,12 @@ __kernel void ray_tracer(
     }
 }
 
-float4 point_on_sphere(float4 sphere, uint seed) {
+float4 point_on_sphere(float4 sphere, uint * seed) {
     int mil = 100000;
     float4 r = (float4){
-        ((seed = rand(seed)) % mil)/(float)mil - 0.5,
-        ((seed = rand(seed)) % mil)/(float)mil - 0.5,
-        ((seed = rand(seed)) % mil)/(float)mil - 0.5,
+        (rand(seed) % mil)/(float)mil - 0.5,
+        (rand(seed) % mil)/(float)mil - 0.5,
+        (rand(seed) % mil)/(float)mil - 0.5,
         0.0
     };
 
@@ -136,16 +133,16 @@ float8 calculate_ray (
  an input seed the next random value in the sequence 
  will be generated.
  --------------------------------------------------- */
-uint rand(uint seed) {
+uint rand(uint * seed) {
     int screen_w = get_global_size(0);
     int x_pos = get_global_id(0);
     int y_pos = get_global_id(1);
     int id = screen_w * y_pos + x_pos;
 
-    seed = seed + id;
-    seed = (seed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
-    seed = seed >> 16;
-    return seed;
+    *seed = *seed + id;
+    *seed = (*seed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
+    *seed = *seed >> 16;
+    return *seed;
 }
 
 /* ---------------------------------------------------

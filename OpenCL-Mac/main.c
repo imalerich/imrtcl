@@ -20,7 +20,8 @@
 #include "cl_util.h"
 #include "vector.h"
 
-const static int RAND_COUNT = 4096;
+#define __REAL_TIME__
+
 const char * window_title = "RayTracer - OpenCL";
 const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
 
@@ -36,7 +37,7 @@ int main(int argc, const char ** argv) {
     srand((int)time(NULL));
     int err = CL_SUCCESS;           // error code parameter for OpenCL functions
 
-    init_gl(window_title, 1);
+    init_gl(window_title, 0);
     init_cl(&ray_tracer_filename, 1);
 
 	// create the OpenCL reference to our OpenGL texture
@@ -58,7 +59,7 @@ int main(int argc, const char ** argv) {
     // surface data
     int num_surfaces = 2;
     struct vector4 * spheres = (struct vector4 *)malloc(sizeof(struct vector4) * num_surfaces);
-    spheres[0] = vector4_init(-0, 0, 3, 0.4);
+    spheres[0] = vector4_init(-0, 0, 3, 0.3);
     spheres[1] = vector4_init( 1.1, 0, 5, 1.0);
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
@@ -84,12 +85,16 @@ int main(int argc, const char ** argv) {
     err |= clSetKernelArg(kernel, 8, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
-    float time = 0.0f;
-    glFinish();
-//    render_cl(time += 1/60.0f);
+    float time = 1.8f;
+
+#ifndef __REAL_TIME__
     render_cl(time = 3.5);
+#endif
 
     while (!glfwWindowShouldClose(window)) {
+#ifdef __REAL_TIME__
+        render_cl(time += 1/60.0f);
+#endif
         present_gl();
 
         glfwSwapBuffers(window);
@@ -109,8 +114,9 @@ int main(int argc, const char ** argv) {
 void render_cl(float time) {
     static int err = CL_SUCCESS;
     const size_t global[] = {screen_w * sample_rate, screen_h * sample_rate};
-    const size_t local[] = {8, 8};
+    const size_t local[] = {8 * sample_rate, 8 * sample_rate};
 
+    glFinish();
     int seed = rand();
     struct vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 1.0);
     err  = clSetKernelArg(kernel, 4, sizeof(struct vector4), &light_pos);
