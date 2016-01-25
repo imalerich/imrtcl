@@ -1,5 +1,5 @@
 OCM = OpenCL-Mac
-OBJ = main.o cl_util.o file_io.o gl_util.o vector.o
+OBJ = main.o cl_util.o file_io.o gl_util.o vector.o camera.o
 LIB = -lOpenCL -lglfw3 -lglew32 -lopengl32 -lglu32 -lgdi32
 
 CUDA = C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v7.5
@@ -8,7 +8,7 @@ INC = -Llib/glew/lib/ -Llib/glfw/lib-mingw/ -L"$(CUDA)/lib/Win32/" -Ilib/glew/in
 all: $(OBJ)
 	g++ -o cl $(INC) $(OBJ) $(LIB)
 
-main.o: $(OCM)/main.c gl_util.o cl_util.o vector.o
+main.o: $(OCM)/main.c gl_util.o cl_util.o vector.o camera.o
 	g++ -c $(INC) $(OCM)/main.c
 
 cl_util.o: $(OCM)/cl_util.c $(OCM)/cl_util.h file_io.o
@@ -22,6 +22,9 @@ file_io.o: $(OCM)/file_io.c $(OCM)/file_io.h
 
 vector.o: $(OCM)/vector.c $(OCM)/vector.h
 	g++ -c $(SEARCh) $(OCM)/vector.c
+
+camera.o: $(OCM)/camera.c $(OCM)/camera.h vector.o
+	g++ -c $(OCM)/camera.c
 
 clean:
 	rm -rf cl

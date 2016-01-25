@@ -40,6 +40,7 @@ extern unsigned screen_h;
 // make the frame rate available
 extern float last_time;
 extern float current_time;
+extern float time_passed;
 extern float fps;
 
 /**

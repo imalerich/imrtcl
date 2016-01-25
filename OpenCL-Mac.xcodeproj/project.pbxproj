@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B90FFCD81C569233003B0AD5 /* camera.c in Sources */ = {isa = PBXBuildFile; fileRef = B90FFCD61C569233003B0AD5 /* camera.c */; };
 		B9141C911C5295F9000F8AD1 /* gl_sample.cl in Sources */ = {isa = PBXBuildFile; fileRef = B9141C901C5295F9000F8AD1 /* gl_sample.cl */; };
 		B92CD7881C4B3998003E2909 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = B92CD7871C4B3998003E2909 /* main.c */; };
 		B94200A71C5152F50069D951 /* gl_util.c in Sources */ = {isa = PBXBuildFile; fileRef = B94200A51C5152F50069D951 /* gl_util.c */; };
@@ -37,6 +38,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B90FFCD61C569233003B0AD5 /* camera.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = camera.c; sourceTree = "<group>"; };
+		B90FFCD71C569233003B0AD5 /* camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = camera.h; sourceTree = "<group>"; };
 		B9141C901C5295F9000F8AD1 /* gl_sample.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; name = gl_sample.cl; path = kernels/gl_sample.cl; sourceTree = "<group>"; };
 		B92CD7841C4B3998003E2909 /* OpenCL-Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OpenCL-Mac"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B92CD7871C4B3998003E2909 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
@@ -145,6 +148,8 @@
 		B94200B11C515CC80069D951 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				B90FFCD61C569233003B0AD5 /* camera.c */,
+				B90FFCD71C569233003B0AD5 /* camera.h */,
 				B94200A51C5152F50069D951 /* gl_util.c */,
 				B94200A61C5152F50069D951 /* gl_util.h */,
 				B9B4C9A41C4C5D1D002E1ACF /* file_io.c */,
@@ -214,6 +219,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B94200A71C5152F50069D951 /* gl_util.c in Sources */,
+				B90FFCD81C569233003B0AD5 /* camera.c in Sources */,
 				B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */,
 				B92CD7881C4B3998003E2909 /* main.c in Sources */,
 				B9438FA71C4F183C007BA831 /* nbody_sim.cl in Sources */,

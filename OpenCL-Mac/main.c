@@ -18,6 +18,7 @@
 
 #include "gl_util.h"
 #include "cl_util.h"
+#include "camera.h"
 #include "vector.h"
 
 #define __REAL_TIME__
@@ -26,8 +27,12 @@ const char * window_title = "RayTracer - OpenCL";
 const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
 
 cl_mem tex;
+void set_camera_kernel_args();
+struct vector4 get_cam_vel();
 void render_cl(float time);
 void present_gl();
+
+static struct cam_data camera;
 
 /**
  Application entry point. Here we will create the OpenCL context,
@@ -37,7 +42,7 @@ int main(int argc, const char ** argv) {
     srand((int)time(NULL));
     int err = CL_SUCCESS;           // error code parameter for OpenCL functions
 
-    init_gl(window_title, 0);
+    init_gl(window_title, 1);
     init_cl(&ray_tracer_filename, 1);
 
 	// create the OpenCL reference to our OpenGL texture
@@ -51,10 +56,10 @@ int main(int argc, const char ** argv) {
      ----------------------------------------------------------- */
 
     // camera data
-    struct vector4 cam_pos = vector4();
-    struct vector4 cam_look = vector3_init(0.0, 0.0, 1.0);
-    struct vector4 cam_right = vector3_init(1.0, 0.0, 0.0);
-    struct vector4 cam_up = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
+    camera.cam_pos = vector4();
+    camera.cam_look = vector3_init(0.0, 0.0, 1.0);
+    camera.cam_right = vector3_init(1.0, 0.0, 0.0);
+    camera.cam_up = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
 
     // surface data
     int num_surfaces = 2;
@@ -71,14 +76,8 @@ int main(int argc, const char ** argv) {
 
     free(spheres);
 
-    // set the camera arguments
-    err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &cam_pos);
-    err |= clSetKernelArg(kernel, 1, sizeof(struct vector4), &cam_look);
-    err |= clSetKernelArg(kernel, 2, sizeof(struct vector4), &cam_right);
-    err |= clSetKernelArg(kernel, 3, sizeof(struct vector4), &cam_up);
-
     // set up our surfaces
-    err |= clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
+    err  = clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
     err |= clSetKernelArg(kernel, 6, sizeof(int), &num_surfaces);
 
     // set the output reference
@@ -93,6 +92,10 @@ int main(int argc, const char ** argv) {
 
     glfwSetTime(0.0f);
     while (!glfwWindowShouldClose(window)) {
+        // update the camera position from the input
+        move_camera(&camera, get_cam_vel(), time_passed);
+        set_camera_kernel_args();
+
 #ifdef __REAL_TIME__
         render_cl(time += 1/60.0f);
 #endif
@@ -110,6 +113,29 @@ int main(int argc, const char ** argv) {
     release_cl();
 
     return 0;
+}
+
+struct vector4 get_cam_vel() {
+    struct vector4 cam_vel = vector4();
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        { cam_vel.x = 1.0f; }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        { cam_vel.x = -1.0f; }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        { cam_vel.z = 1.0f; }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        { cam_vel.z = -1.0f; }
+
+    return cam_vel;
+}
+
+void set_camera_kernel_args() {
+    static int err = CL_SUCCESS;
+    err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &camera.cam_pos);
+    err |= clSetKernelArg(kernel, 1, sizeof(struct vector4), &camera.cam_look);
+    err |= clSetKernelArg(kernel, 2, sizeof(struct vector4), &camera.cam_right);
+    err |= clSetKernelArg(kernel, 3, sizeof(struct vector4), &camera.cam_up);
+    cl_check_err(err, "clSetKernelArg(...)");
 }
 
 void render_cl(float time) {

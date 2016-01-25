@@ -23,6 +23,7 @@ GLuint screen_tex;
 
 float last_time = 0.0f;
 float current_time = 0.0f;
+float time_passed = 0.0f;
 unsigned frame_count = 0;
 float fps = 0;
 
@@ -96,7 +97,7 @@ void init_gl(const char * title, int v_sync) {
 
 void update_screen() {
     // update the frame counter information
-    current_time += glfwGetTime() - last_time;
+    current_time += (time_passed = glfwGetTime() - last_time);
     if (current_time > 1.0f) {
         fps = frame_count / current_time;
         printf("fps: %f\n", fps);
