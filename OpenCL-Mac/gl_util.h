@@ -18,10 +18,17 @@
 	#define GLFW_EXPOSE_NATIVE_COCOA
 	#define GLFW_EXPOSE_NATIVE_NSGL
 	#include <OpenGL/OpenGL.h>
-#else
+#endif
+#ifdef __linux__
 	#define GLFW_EXPOSE_NATIVE_X11
 	#define GLFW_EXPOSE_NATIVE_GLX
 	#include <GL/glx.h>
+#endif
+#ifdef __MINGW32__
+	#define GLFW_EXPOSE_NATIVE_WIN32	
+	#define GLFW_EXPOSE_NATIVE_WGL
+	#include <windows.h>
+	#include <Wingdi.h>
 #endif
 
 #include <GLFW/glfw3native.h>
@@ -29,6 +36,11 @@
 extern GLFWwindow * window;
 extern unsigned screen_w;
 extern unsigned screen_h;
+
+// make the frame rate available
+extern float last_time;
+extern float current_time;
+extern float fps;
 
 /**
  serves as a multiplier to the screen_w and the screen_h

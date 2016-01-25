@@ -30,8 +30,13 @@ void cl_check_err(int err, const char * msg) {
 void init_cl(const char ** sources, int count) {
     int err = CL_SUCCESS;
 
+    // get the platform id for this system
+    cl_platform_id platform;
+    err = clGetPlatformIDs(1, &platform, NULL);
+    cl_check_err(err, "clGetPlatformIDs(...)");
+
     // connect to the compute device
-    err = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);
+    err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);
     cl_check_err(err, "clGetDeviceIDs(...)");
 
     // set the platform specific context properties for OpenGL + OpenCL sharing
@@ -41,17 +46,20 @@ void init_cl(const char ** sources, int count) {
         (cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
         0};
 
-#else
-    cl_platform_id platform;
-	err = clGetPlatformIDs(1, &platform, NULL);
-    cl_check_err(err, "clGetPlatformIDs(...)");
-
+#endif
+#ifdef __linux__
     cl_context_properties ctx_prop[] = {
         CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window),
         CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetX11Display(),
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
         0};
-    
+#endif
+#ifdef __MINGW32__
+    cl_context_properties ctx_prop[] = {
+        CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
+        CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
+        0};
 #endif
 
     // create the working context

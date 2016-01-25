@@ -18,8 +18,13 @@
 GLFWwindow * window;
 unsigned screen_w = 800;
 unsigned screen_h = 600;
-unsigned sample_rate = 2;
+unsigned sample_rate = 1;
 GLuint screen_tex;
+
+float last_time = 0.0f;
+float current_time = 0.0f;
+unsigned frame_count = 0;
+float fps = 0;
 
 GLenum gl_err;
 
@@ -90,7 +95,19 @@ void init_gl(const char * title, int v_sync) {
 }
 
 void update_screen() {
+    // update the frame counter information
+    current_time += glfwGetTime() - last_time;
+    if (current_time > 1.0f) {
+        fps = frame_count / current_time;
+        printf("fps: %f\n", fps);
+        current_time = 0.0f;
+        frame_count = 0;
+    }
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    frame_count++;
+    last_time = glfwGetTime();
 }
 
 void init_screen_rect() {
