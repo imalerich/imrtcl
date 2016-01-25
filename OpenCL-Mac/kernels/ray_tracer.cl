@@ -3,11 +3,14 @@
 // function prototypes
 float8 calculate_ray (float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
+int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n, float4 * intersect, float4 * norm);
+int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 float4 point_on_sphere(float4 sphere, uint * seed);
+float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm);
 uint rand(uint * seed);
 
-/* ---------------------------------------------------
+/*
  Generates an image buffer by ray tracing each pixel
  for the scene given as parameters to this kernel.
  
@@ -19,7 +22,7 @@ uint rand(uint * seed);
  spheres each contained within a single float4.
  Components .xyz represent the center coordinate while
  the .w component represent the radius of the sphere.
- --------------------------------------------------- */
+ */
 __kernel void ray_tracer(
         // camera information
         float4 camera_pos,
@@ -49,14 +52,8 @@ __kernel void ray_tracer(
 
     float8 ray = calculate_ray(camera_pos, camera_look, camera_right, camera_up);
 
-    int hit = -1;
     float4 norm, intersect;
-    for (int i = 0; i < n_surfaces; i++) {
-        if (intersect_ray_sphere(ray, surfaces[i], &intersect, &norm)) {
-            hit = i;
-            break;
-        }
-    }
+    int hit = intersect_ray_surfaces(ray, surfaces, n_surfaces, &intersect, &norm);
 
     if (hit >= 0) {
         float d = 0.0;
@@ -67,15 +64,10 @@ __kernel void ray_tracer(
             float4 sample_pos = point_on_sphere(light_pos, &seed);
 
             float4 l_dir = normalize(sample_pos - intersect);
-            float sample_d = max(dot(l_dir, norm), 10/255.0f);
+            float sample_d = 10.0f/255.0f;
 
-            // for each surface
-            for (int i = 0; i < n_surfaces; i++) {
-                if (intersect_ray_sphere((float8){intersect, l_dir},
-                                                     surfaces[i], 0, 0)) {
-                    sample_d = 10/255.0f;
-                    break;
-                }
+            if (intersect_ray_any_surface((float8){intersect, l_dir}, surfaces, n_surfaces) < 0) {
+                sample_d = max(scalar_for_lighting(ray, l_dir, norm), 10/255.0f);
             }
 
             // add this samples contribution to the overall lighting
@@ -88,6 +80,28 @@ __kernel void ray_tracer(
     }
 }
 
+/*
+ Calculates a lighting sample for the given normal and light direction.
+ The function will then return a scalar in the range of 0.0f -> 1.0f
+ for the given point.
+ */
+float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm) {
+    norm = normalize(norm);
+    float l = dot(l_dir, norm);
+
+    // Blinn-Phong
+    float4 b_dir = normalize(l_dir - ray.hi);
+    float blinn = dot(b_dir, norm);
+    float spec = 0.5f * pow(blinn, 64.0f);
+
+    return max(min(l + spec, 1.0f), 0.0f);
+}
+
+/*
+ Returns a random point on the input sphere, using the given
+ random number seed. This function will push a new seed into
+ the provided seed upon completion.
+ */
 float4 point_on_sphere(float4 sphere, uint * seed) {
     int mil = 100000;
     float4 r = (float4){
@@ -100,10 +114,10 @@ float4 point_on_sphere(float4 sphere, uint * seed) {
     return normalize(r) * (float4)sphere.w + (float4){sphere.xyz, 0.0};
 }
 
-/* ---------------------------------------------------
+/*
  Takes the input camera vectors and calculates the
  ray that will be used for a particular work item.
- --------------------------------------------------- */
+ */
 float8 calculate_ray (
         float4 camera_pos,
         float4 camera_look,
@@ -128,11 +142,11 @@ float8 calculate_ray (
     return (float8){ camera_pos.xyz, 0.0, dir };
 }
 
-/* ---------------------------------------------------
+/*
  Implements a basic random number generatoed. Given
  an input seed the next random value in the sequence 
  will be generated.
- --------------------------------------------------- */
+ */
 uint rand(uint * seed) {
     int screen_w = get_global_size(0);
     int x_pos = get_global_id(0);
@@ -145,7 +159,57 @@ uint rand(uint * seed) {
     return *seed;
 }
 
-/* ---------------------------------------------------
+/*
+ Performs ray intersections tests across the given scene. The object
+ whos intersection occurs nearest to the origin of the ray
+ is returned as an index into the surfaces array. If an intersection 
+ does not occur -1 will be returned.
+ */
+int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n,
+                           float4 * intersect, float4 * norm) {
+    int hit = -1;
+    float min_dist = -1;
+    float4 tmp_i, tmp_n;
+
+    // for each surface
+    for (int i = 0; i < n; i++) {
+        // check if the input ray hits the input surface
+        if (intersect_ray_sphere(ray, surfaces[i], &tmp_i, &tmp_n)) {
+            float dist = length(*intersect - ray.lo);
+
+            // ignore the intersection if it is not closer than the last
+            if (min_dist == -1 || dist < min_dist) {
+                // update the intersection and normal coordinates
+                *intersect = tmp_i;
+                *norm = tmp_n;
+
+                hit = i;
+                min_dist = dist;
+            }
+        }
+    }
+
+    return hit;
+}
+
+/*
+ Performs a similar intersection test to intersect_ray_surfaces(...),
+ however this function will return immediately as soon as an intersection
+ occurs. Use this when you need to know if an intersectino occurs, but 
+ not the which surfaces is nearest to the rays origin.
+ */
+int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n) {
+    // loop through each surface and try to find an intersection
+    for (int i = 0; i < n; i++) {
+        if (intersect_ray_sphere(ray, surfaces[i], 0, 0)) {
+            return 1;
+        }
+    }
+
+    return -1;
+}
+
+/*
  Determines whether or not the input ray intersects
  with the given input sphere.
  The low 4 components of the ray will be treated
@@ -154,7 +218,7 @@ uint rand(uint * seed) {
  The spheres position in space will be treated as
  its .xyz components while its .w component will
  be used for the radius of the sphere.
- --------------------------------------------------- */
+ */
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm) {
     float4 center = {sphere.xyz, 0.0f};
     float radius = sphere.w;
