@@ -1,4 +1,7 @@
 cl
+cl.exe
+lib
+*.dll
 *.o
 *.swp
 *.csv
