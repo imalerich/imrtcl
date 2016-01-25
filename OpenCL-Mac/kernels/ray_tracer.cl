@@ -175,7 +175,7 @@ int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n,
     for (int i = 0; i < n; i++) {
         // check if the input ray hits the input surface
         if (intersect_ray_sphere(ray, surfaces[i], &tmp_i, &tmp_n)) {
-            float dist = length(*intersect - ray.lo);
+            float dist = length(tmp_i - ray.lo);
 
             // ignore the intersection if it is not closer than the last
             if (min_dist == -1 || dist < min_dist) {
