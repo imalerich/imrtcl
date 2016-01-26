@@ -46,15 +46,13 @@ void init_cl(const char ** sources, int count) {
         (cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
         0};
 
-#endif
-#ifdef __linux__
+#elif defined __linux__
     cl_context_properties ctx_prop[] = {
         CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window),
         CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetX11Display(),
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
         0};
-#endif
-#ifdef __MINGW32__
+#elif defined __MINGW32__
     cl_context_properties ctx_prop[] = {
         CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
         CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),

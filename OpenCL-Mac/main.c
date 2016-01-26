@@ -29,6 +29,7 @@ const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
 cl_mem tex;
 void set_camera_kernel_args();
 struct vector4 get_cam_vel();
+struct vector4 get_cam_rot();
 void render_cl(float time);
 void present_gl();
 
@@ -56,10 +57,10 @@ int main(int argc, const char ** argv) {
      ----------------------------------------------------------- */
 
     // camera data
-    camera.cam_pos = vector4();
-    camera.cam_look = vector3_init(0.0, 0.0, 1.0);
-    camera.cam_right = vector3_init(1.0, 0.0, 0.0);
-    camera.cam_up = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
+    camera.pos      = vector4();
+    camera.look     = vector3_init(0.0, 0.0, 1.0);
+    camera.right    = vector3_init(1.0, 0.0, 0.0);
+    camera.up       = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
 
     // surface data
     int num_surfaces = 2;
@@ -93,7 +94,8 @@ int main(int argc, const char ** argv) {
     glfwSetTime(0.0f);
     while (!glfwWindowShouldClose(window)) {
         // update the camera position from the input
-        move_camera(&camera, get_cam_vel(), time_passed);
+        move_camera(&camera, get_cam_vel());
+        rotate_camera(&camera, get_cam_rot());
         set_camera_kernel_args();
 
 #ifdef __REAL_TIME__
@@ -118,23 +120,37 @@ int main(int argc, const char ** argv) {
 struct vector4 get_cam_vel() {
     struct vector4 cam_vel = vector4();
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        { cam_vel.x = 1.0f; }
+        { cam_vel.x = 1.0f * time_passed; }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        { cam_vel.x = -1.0f; }
+        { cam_vel.x = -1.0f * time_passed; }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        { cam_vel.z = 1.0f; }
+        { cam_vel.z = 1.0f * time_passed; }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        { cam_vel.z = -1.0f; }
+        { cam_vel.z = -1.0f * time_passed; }
 
     return cam_vel;
 }
 
+struct vector4 get_cam_rot() {
+    float pitch = 0.0f, yaw = 0.0f;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        { pitch = 1.0f * time_passed; }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        { pitch = -1.0f * time_passed; }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        { yaw = 1.0f * time_passed; }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        { yaw = -1.0f * time_passed; }
+
+    return vector4();
+}
+
 void set_camera_kernel_args() {
     static int err = CL_SUCCESS;
-    err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &camera.cam_pos);
-    err |= clSetKernelArg(kernel, 1, sizeof(struct vector4), &camera.cam_look);
-    err |= clSetKernelArg(kernel, 2, sizeof(struct vector4), &camera.cam_right);
-    err |= clSetKernelArg(kernel, 3, sizeof(struct vector4), &camera.cam_up);
+    err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &camera.pos);
+    err |= clSetKernelArg(kernel, 1, sizeof(struct vector4), &camera.look);
+    err |= clSetKernelArg(kernel, 2, sizeof(struct vector4), &camera.right);
+    err |= clSetKernelArg(kernel, 3, sizeof(struct vector4), &camera.up);
     cl_check_err(err, "clSetKernelArg(...)");
 }
 

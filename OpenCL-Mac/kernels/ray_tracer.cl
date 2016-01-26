@@ -3,12 +3,12 @@
 // function prototypes
 float8 calculate_ray (float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
-int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n, float4 * intersect, float4 * norm);
-int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n);
-bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 float4 point_on_sphere(float4 sphere, uint * seed);
 float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm);
 uint rand(uint * seed);
+int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n, float4 * intersect, float4 * norm);
+int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n);
+bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 
 /*
  Generates an image buffer by ray tracing each pixel

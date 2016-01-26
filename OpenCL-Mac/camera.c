@@ -8,9 +8,29 @@
 
 #include "camera.h"
 
-void move_camera(struct cam_data * camera, struct vector4 vel, float delta) {
-    camera->cam_pos.x += vel.x * delta;
-    camera->cam_pos.y += vel.y * delta;
-    camera->cam_pos.z += vel.z * delta;
-    camera->cam_pos.w += vel.w * delta;
+void move_camera(struct cam_data * camera, struct vector4 vel) {
+    camera->pos.x += vel.x;
+    camera->pos.y += vel.y;
+    camera->pos.z += vel.z;
+    camera->pos.w += vel.w;
+}
+
+void rotate_camera_axis(struct cam_data * camera, struct vector4 axis, float theta) {
+    // TODO
+}
+
+void rotate_camera(struct cam_data * camera, struct vector4 quat) {
+    // TODO
+}
+
+void rotate_camera_yaw(struct cam_data * camera, float theta) {
+    rotate_camera_axis(camera, camera->up, theta);
+}
+
+void rotate_camera_pitch(struct cam_data * camera, float theta) {
+    rotate_camera_axis(camera, camera->right, theta);
+}
+
+void rotate_camera_roll(struct cam_data * camera, float theta) {
+    rotate_camera_axis(camera, camera->look, theta);
 }

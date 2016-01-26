@@ -18,13 +18,11 @@
 	#define GLFW_EXPOSE_NATIVE_COCOA
 	#define GLFW_EXPOSE_NATIVE_NSGL
 	#include <OpenGL/OpenGL.h>
-#endif
-#ifdef __linux__
+#elif defined __linux__
 	#define GLFW_EXPOSE_NATIVE_X11
 	#define GLFW_EXPOSE_NATIVE_GLX
 	#include <GL/glx.h>
-#endif
-#ifdef __MINGW32__
+#elif defined __MINGW32__
 	#define GLFW_EXPOSE_NATIVE_WIN32	
 	#define GLFW_EXPOSE_NATIVE_WGL
 	#include <windows.h>
