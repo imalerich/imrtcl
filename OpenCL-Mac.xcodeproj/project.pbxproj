@@ -13,6 +13,7 @@
 		B94200A71C5152F50069D951 /* gl_util.c in Sources */ = {isa = PBXBuildFile; fileRef = B94200A51C5152F50069D951 /* gl_util.c */; };
 		B9438FA71C4F183C007BA831 /* nbody_sim.cl in Sources */ = {isa = PBXBuildFile; fileRef = B9438FA51C4F183C007BA831 /* nbody_sim.cl */; };
 		B9438FA81C4F183C007BA831 /* ray_tracer.cl in Sources */ = {isa = PBXBuildFile; fileRef = B9438FA61C4F183C007BA831 /* ray_tracer.cl */; };
+		B94B52161C57DA2C006DCD3C /* mat4x4.c in Sources */ = {isa = PBXBuildFile; fileRef = B94B52141C57DA2C006DCD3C /* mat4x4.c */; };
 		B95A374B1C4D313C009F4B89 /* vector.c in Sources */ = {isa = PBXBuildFile; fileRef = B95A37491C4D313C009F4B89 /* vector.c */; };
 		B98039651C51C1E500B3345F /* libGLEW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B98039641C51C1E500B3345F /* libGLEW.a */; };
 		B98039671C51C27700B3345F /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B98039661C51C27700B3345F /* OpenCL.framework */; };
@@ -49,6 +50,8 @@
 		B94200B31C515CE00069D951 /* simple.vs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = simple.vs; path = shaders/simple.vs; sourceTree = "<group>"; };
 		B9438FA51C4F183C007BA831 /* nbody_sim.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; name = nbody_sim.cl; path = kernels/nbody_sim.cl; sourceTree = "<group>"; };
 		B9438FA61C4F183C007BA831 /* ray_tracer.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; name = ray_tracer.cl; path = kernels/ray_tracer.cl; sourceTree = "<group>"; };
+		B94B52141C57DA2C006DCD3C /* mat4x4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mat4x4.c; sourceTree = "<group>"; };
+		B94B52151C57DA2C006DCD3C /* mat4x4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mat4x4.h; sourceTree = "<group>"; };
 		B95A37491C4D313C009F4B89 /* vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vector.c; sourceTree = "<group>"; };
 		B95A374A1C4D313C009F4B89 /* vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vector.h; sourceTree = "<group>"; };
 		B98039641C51C1E500B3345F /* libGLEW.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libGLEW.a; path = /usr/local/lib/libGLEW.a; sourceTree = "<absolute>"; };
@@ -150,6 +153,8 @@
 			children = (
 				B90FFCD61C569233003B0AD5 /* camera.c */,
 				B90FFCD71C569233003B0AD5 /* camera.h */,
+				B94B52141C57DA2C006DCD3C /* mat4x4.c */,
+				B94B52151C57DA2C006DCD3C /* mat4x4.h */,
 				B94200A51C5152F50069D951 /* gl_util.c */,
 				B94200A61C5152F50069D951 /* gl_util.h */,
 				B9B4C9A41C4C5D1D002E1ACF /* file_io.c */,
@@ -219,6 +224,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B94200A71C5152F50069D951 /* gl_util.c in Sources */,
+				B94B52161C57DA2C006DCD3C /* mat4x4.c in Sources */,
 				B90FFCD81C569233003B0AD5 /* camera.c in Sources */,
 				B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */,
 				B92CD7881C4B3998003E2909 /* main.c in Sources */,
