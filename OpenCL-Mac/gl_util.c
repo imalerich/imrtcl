@@ -174,7 +174,7 @@ void init_screen_tex() {
     unsigned w = screen_w * sample_rate;
     unsigned h = screen_h * sample_rate;
 
-    struct vector4 * data = (struct vector4 *)malloc(sizeof(struct vector4) * w * h);
+    vector4 * data = (vector4 *)malloc(sizeof(vector4) * w * h);
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             data[y * w + x] = vector4_init(1.0f, 1.0f, 1.0f, 1.0f);

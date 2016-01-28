@@ -28,8 +28,8 @@ const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
 
 cl_mem tex;
 void set_camera_kernel_args();
-struct vector4 get_cam_vel();
-struct vector4 get_cam_rot();
+vector4 get_cam_vel();
+vector4 get_cam_rot();
 void render_cl(float time);
 void present_gl();
 
@@ -57,22 +57,22 @@ int main(int argc, const char ** argv) {
      ----------------------------------------------------------- */
 
     // camera data
-    camera.pos      = vector4();
+    camera.pos      = zero_vector4();
     camera.look     = vector3_init(0.0, 0.0, 1.0);
     camera.right    = vector3_init(1.0, 0.0, 0.0);
     camera.up       = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
 
     // surface data
     int num_surfaces = 2;
-    struct vector4 * spheres = (struct vector4 *)malloc(sizeof(struct vector4) * num_surfaces);
+    vector4 * spheres = (vector4 *)malloc(sizeof(vector4) * num_surfaces);
     spheres[0] = vector4_init(-0, 0, 3, 0.3);
     spheres[1] = vector4_init( 1.1, 0, 5, 1.0);
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                     num_surfaces * sizeof(struct vector4), NULL, &err);
+                                     num_surfaces * sizeof(vector4), NULL, &err);
     cl_check_err(err, "clCreateBuffer(...)");
     err = clEnqueueWriteBuffer(command_queue, surfaces, CL_TRUE, 0,
-                               num_surfaces * sizeof(struct vector4), spheres, 0, NULL, NULL);
+                               num_surfaces * sizeof(vector4), spheres, 0, NULL, NULL);
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
     free(spheres);
@@ -117,8 +117,8 @@ int main(int argc, const char ** argv) {
     return 0;
 }
 
-struct vector4 get_cam_vel() {
-    struct vector4 cam_vel = vector4();
+vector4 get_cam_vel() {
+    vector4 cam_vel = zero_vector4();
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         { cam_vel.x = 1.0f * time_passed; }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
@@ -131,7 +131,7 @@ struct vector4 get_cam_vel() {
     return cam_vel;
 }
 
-struct vector4 get_cam_rot() {
+vector4 get_cam_rot() {
     float pitch = 0.0f, yaw = 0.0f;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
         { pitch = 1.0f * time_passed; }
@@ -142,15 +142,15 @@ struct vector4 get_cam_rot() {
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
         { yaw = -1.0f * time_passed; }
 
-    return vector4();
+    return zero_vector4();
 }
 
 void set_camera_kernel_args() {
     static int err = CL_SUCCESS;
-    err  = clSetKernelArg(kernel, 0, sizeof(struct vector4), &camera.pos);
-    err |= clSetKernelArg(kernel, 1, sizeof(struct vector4), &camera.look);
-    err |= clSetKernelArg(kernel, 2, sizeof(struct vector4), &camera.right);
-    err |= clSetKernelArg(kernel, 3, sizeof(struct vector4), &camera.up);
+    err  = clSetKernelArg(kernel, 0, sizeof(vector4), &camera.pos);
+    err |= clSetKernelArg(kernel, 1, sizeof(vector4), &camera.look);
+    err |= clSetKernelArg(kernel, 2, sizeof(vector4), &camera.right);
+    err |= clSetKernelArg(kernel, 3, sizeof(vector4), &camera.up);
     cl_check_err(err, "clSetKernelArg(...)");
 }
 
@@ -161,8 +161,8 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    struct vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 1.0);
-    err  = clSetKernelArg(kernel, 4, sizeof(struct vector4), &light_pos);
+    vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 1.0);
+    err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 7, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
 

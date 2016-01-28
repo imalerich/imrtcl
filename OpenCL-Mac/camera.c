@@ -8,18 +8,18 @@
 
 #include "camera.h"
 
-void move_camera(struct cam_data * camera, struct vector4 vel) {
+void move_camera(struct cam_data * camera, vector4 vel) {
     camera->pos.x += vel.x;
     camera->pos.y += vel.y;
     camera->pos.z += vel.z;
     camera->pos.w += vel.w;
 }
 
-void rotate_camera_axis(struct cam_data * camera, struct vector4 axis, float theta) {
+void rotate_camera_axis(struct cam_data * camera, vector4 axis, float theta) {
     // TODO
 }
 
-void rotate_camera(struct cam_data * camera, struct vector4 quat) {
+void rotate_camera(struct cam_data * camera, vector4 quat) {
     // TODO
 }
 

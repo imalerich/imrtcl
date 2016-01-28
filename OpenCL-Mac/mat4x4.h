@@ -11,17 +11,17 @@
 
 #include "vector.h"
 
-struct mat4x4 {
-    struct vector4 x;
-    struct vector4 y;
-    struct vector4 z;
-    struct vector4 w;
-};
+typedef struct {
+    vector4 x;
+    vector4 y;
+    vector4 z;
+    vector4 w;
+} mat4x4;
 
 /**
  Initializes a matrix to the identity matrix.
  */
-struct mat4x4 mat_identity();
+mat4x4 mat_identity();
 
 /**
  Initializes a matrix with the contents of 
@@ -30,7 +30,7 @@ struct mat4x4 mat_identity();
  \param values Initialization array for the matrix.
  \Return The matrix representation of 'values'.
  */
-struct mat4x4 mat_init(float * f);
+mat4x4 mat_init(float * f);
 
 /**
  Generates a new matrix as the result of the product of a * b.
@@ -38,6 +38,6 @@ struct mat4x4 mat_init(float * f);
  \param b Second operand of the matrix multiplication.
  \return The result of the matrix multiplication.
  */
-struct mat4x4 mat_multiply(struct mat4x4 a, struct mat4x4 b);
+mat4x4 mat_multiply(mat4x4 a, mat4x4 b);
 
 #endif

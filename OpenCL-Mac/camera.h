@@ -12,10 +12,10 @@
 #include "vector.h"
 
 struct cam_data {
-    struct vector4 pos;
-    struct vector4 look;
-    struct vector4 right;
-    struct vector4 up;
+    vector4 pos;
+    vector4 look;
+    vector4 right;
+    vector4 up;
 };
 
 /**
@@ -24,7 +24,7 @@ struct cam_data {
  \param camera The camera representation to be moved.
  \param vel The velocity vector at which to move the camera.
  */
-void move_camera(struct cam_data * camera, struct vector4 vel);
+void move_camera(struct cam_data * camera, vector4 vel);
 
 /**
  Rotates the 'camera' by 'theta' radians around 'axis'.
@@ -32,7 +32,7 @@ void move_camera(struct cam_data * camera, struct vector4 vel);
  \param axis The axis to be rotated around.
  \param theta Radians to rotate the camera by.
  */
-void rotate_camera_axis(struct cam_data * camera, struct vector4 axis, float theta);
+void rotate_camera_axis(struct cam_data * camera, vector4 axis, float theta);
 
 /**
  Rotates the 'camera' by the input quaternion.
@@ -41,7 +41,7 @@ void rotate_camera_axis(struct cam_data * camera, struct vector4 axis, float the
  \param camera The camera representation to be rotated.
  \param quat The quaternion that will be used for the rotation.
  */
-void rotate_camera(struct cam_data * camera, struct vector4 quat);
+void rotate_camera(struct cam_data * camera, vector4 quat);
 
 /**
  Utility method to perform a rotation around the cam_up axis.
