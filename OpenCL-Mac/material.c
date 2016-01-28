@@ -11,8 +11,9 @@
 
 material rand_material() {
     return (material) {
-        rand_vector4(),
-        (rand() % 1000) / 1000.0f, rand() % 32, // specular
+        rand_vector4(),             // diffuse
+        (rand() % 1000) / 1000.0f,  // specular-scalar
+        (float)(rand() % 32) + 32,  // specular-power
         (rand() % 1000) / 1000.0f,  // reflection
         (rand() % 1000) / 1000.0f   // refraction
     };

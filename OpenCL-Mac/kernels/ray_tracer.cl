@@ -4,15 +4,10 @@
 #define SURFACE_PLANE   1
 #define SURFACE_AA_CUBE 2
 
-// function prototypes
-float8 calculate_ray (float4 camera_pos, float4 camera_look,
-        float4 camera_right, float4 camera_up);
-float4 point_on_sphere(float4 sphere, uint * seed);
-float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm);
-uint rand(uint * seed);
-int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n, float4 * intersect, float4 * norm);
-int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n);
-bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
+typedef struct {
+    int shape_id;   // ie. SHAPE_SPHERE
+    float8 data;    // all data should be packed into this component
+} surface;
 
 typedef struct {
     float4 diffuse;
@@ -24,10 +19,15 @@ typedef struct {
     float refract;
 } material;
 
-typedef struct {
-    int shape_id;   // ie. SHAPE_SPHERE
-    float8 data;    // all data should be packed into this component
-} surface;
+// function prototypes
+float8 calculate_ray (float4 camera_pos, float4 camera_look,
+        float4 camera_right, float4 camera_up);
+float4 point_on_sphere(float4 sphere, uint * seed);
+float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
+uint rand(uint * seed);
+int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n, float4 * intersect, float4 * norm);
+int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n);
+bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 
 /*
  Generates an image buffer by ray tracing each pixel
@@ -87,7 +87,7 @@ __kernel void ray_tracer(
             float sample_d = 10.0f/255.0f;
 
             if (intersect_ray_any_surface((float8){intersect, l_dir}, surfaces, n_surfaces) < 0) {
-                sample_d = max(scalar_for_lighting(ray, l_dir, norm), 10/255.0f);
+                sample_d = max(scalar_for_lighting(ray, l_dir, norm, materials[hit]), 10/255.0f);
             }
 
             // add this samples contribution to the overall lighting
@@ -105,14 +105,14 @@ __kernel void ray_tracer(
  The function will then return a scalar in the range of 0.0f -> 1.0f
  for the given point.
  */
-float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm) {
+float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat) {
     norm = normalize(norm);
     float l = dot(l_dir, norm);
 
     // Blinn-Phong
     float4 b_dir = normalize(l_dir - ray.hi);
     float blinn = dot(b_dir, norm);
-    float spec = 0.5f * pow(blinn, 64.0f);
+    float spec = mat.spec_scalar * pow(blinn, mat.spec_power);
 
     return max(min(l + spec, 1.0f), 0.0f);
 }
