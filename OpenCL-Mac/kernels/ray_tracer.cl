@@ -1,5 +1,9 @@
 #define EPSILON 0.00000000001
 
+#define SURFACE_SPHERE  0
+#define SURFACE_PLANE   1
+#define SURFACE_AA_CUBE 2
+
 // function prototypes
 float8 calculate_ray (float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
@@ -9,6 +13,21 @@ uint rand(uint * seed);
 int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n, float4 * intersect, float4 * norm);
 int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
+
+typedef struct {
+    float4 diffuse;
+
+    float spec_scalar;
+    float spec_power;
+
+    float reflect;
+    float refract;
+} material;
+
+typedef struct {
+    int shape_id;   // ie. SHAPE_SPHERE
+    float8 data;    // all data should be packed into this component
+} surface;
 
 /*
  Generates an image buffer by ray tracing each pixel
@@ -33,6 +52,7 @@ __kernel void ray_tracer(
         // scene information
         float4 light_pos,
         __global float4 * surfaces,
+        __global material * materials,
         int n_surfaces,
 
         // seed for the random number generator
@@ -74,7 +94,7 @@ __kernel void ray_tracer(
             d += sample_d / (float)l_samples;
         }
 
-        write_imagef(output, (int2){x_pos, y_pos}, (float4)(d, d, d, 1.0));
+        write_imagef(output, (int2){x_pos, y_pos}, (float4)(d, d, d, 1.0) * materials[hit].diffuse);
     } else {
         write_imagef(output, (int2){x_pos, y_pos}, (float4){49/255.0, 51/255.0, 71/255.0, 1.0});
     }
@@ -156,6 +176,7 @@ uint rand(uint * seed) {
     *seed = *seed + id;
     *seed = (*seed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
     *seed = *seed >> 16;
+
     return *seed;
 }
 

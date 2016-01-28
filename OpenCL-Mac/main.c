@@ -20,6 +20,7 @@
 #include "cl_util.h"
 #include "camera.h"
 #include "vector.h"
+#include "material.h"
 
 #define __REAL_TIME__
 
@@ -68,6 +69,10 @@ int main(int argc, const char ** argv) {
     spheres[0] = vector4_init(-0, 0, 3, 0.3);
     spheres[1] = vector4_init( 1.1, 0, 5, 1.0);
 
+    material * materials = (material *)malloc(sizeof(material) * num_surfaces);
+    materials[0] = rand_material();
+    materials[1] = rand_material();
+
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      num_surfaces * sizeof(vector4), NULL, &err);
     cl_check_err(err, "clCreateBuffer(...)");
@@ -75,14 +80,23 @@ int main(int argc, const char ** argv) {
                                num_surfaces * sizeof(vector4), spheres, 0, NULL, NULL);
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
+    cl_mem mat = clCreateBuffer(context, CL_MEM_READ_ONLY,
+                                      num_surfaces * sizeof(material), NULL, &err);
+    cl_check_err(err, "clCreateBuffer(...)");
+    err = clEnqueueWriteBuffer(command_queue, mat, CL_TRUE, 0,
+                               num_surfaces * sizeof(material), materials, 0, NULL, NULL);
+    cl_check_err(err, "clEnqueueWriteBuffer(...)");
+
     free(spheres);
+    free(materials);
 
     // set up our surfaces
     err  = clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
-    err |= clSetKernelArg(kernel, 6, sizeof(int), &num_surfaces);
+    err  = clSetKernelArg(kernel, 6, sizeof(cl_mem), &mat);
+    err |= clSetKernelArg(kernel, 7, sizeof(int), &num_surfaces);
 
     // set the output reference
-    err |= clSetKernelArg(kernel, 8, sizeof(cl_mem), &tex);
+    err |= clSetKernelArg(kernel, 9, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
     float time = 1.8f;
@@ -163,7 +177,7 @@ void render_cl(float time) {
     int seed = rand();
     vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 1.0);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
-    err |= clSetKernelArg(kernel, 7, sizeof(int), &seed);
+    err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
 
     err = clEnqueueAcquireGLObjects(command_queue, 1, &tex, 0, 0, NULL);

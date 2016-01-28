@@ -7,6 +7,7 @@
 //
 
 #include <math.h>
+#include <stdlib.h>
 #include "vector.h"
 
 vector4 zero_vector4() {
@@ -23,6 +24,16 @@ vector4 vector3_init(float x, float y, float z) {
 
 vector4 vector4_init(float x, float y, float z, float w) {
     return (vector4) { x, y, z, w };
+}
+
+vector4 rand_vector4() {
+    const static int mil = 1000000;
+    return (vector4) {
+        rand() % mil / (float)mil,
+        rand() % mil / (float)mil,
+        rand() % mil / (float)mil,
+        rand() % mil / (float)mil
+    };
 }
 
 vector4 vector4_quaternion(vector4 axis, float theta) {

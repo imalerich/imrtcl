@@ -24,6 +24,7 @@
 		B9A960DF1C502A06004936B5 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960DE1C502A06004936B5 /* CoreVideo.framework */; };
 		B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A41C4C5D1D002E1ACF /* file_io.c */; };
 		B9B4C9A91C4C5DEE002E1ACF /* cl_util.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */; };
+		B9FBFA141C59C70C0008A9C3 /* material.c in Sources */ = {isa = PBXBuildFile; fileRef = B9FBFA121C59C70C0008A9C3 /* material.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -66,6 +67,8 @@
 		B9B4C9A51C4C5D1D002E1ACF /* file_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_io.h; sourceTree = "<group>"; };
 		B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cl_util.c; sourceTree = "<group>"; };
 		B9B4C9A81C4C5DEE002E1ACF /* cl_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cl_util.h; sourceTree = "<group>"; };
+		B9FBFA121C59C70C0008A9C3 /* material.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = material.c; sourceTree = "<group>"; };
+		B9FBFA131C59C70C0008A9C3 /* material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = material.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +156,8 @@
 			children = (
 				B90FFCD61C569233003B0AD5 /* camera.c */,
 				B90FFCD71C569233003B0AD5 /* camera.h */,
+				B9FBFA121C59C70C0008A9C3 /* material.c */,
+				B9FBFA131C59C70C0008A9C3 /* material.h */,
 				B94B52141C57DA2C006DCD3C /* mat4x4.c */,
 				B94B52151C57DA2C006DCD3C /* mat4x4.h */,
 				B94200A51C5152F50069D951 /* gl_util.c */,
@@ -225,6 +230,7 @@
 			files = (
 				B94200A71C5152F50069D951 /* gl_util.c in Sources */,
 				B94B52161C57DA2C006DCD3C /* mat4x4.c in Sources */,
+				B9FBFA141C59C70C0008A9C3 /* material.c in Sources */,
 				B90FFCD81C569233003B0AD5 /* camera.c in Sources */,
 				B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */,
 				B92CD7881C4B3998003E2909 /* main.c in Sources */,

@@ -38,6 +38,14 @@ vector4 vector3_init(float x, float y, float z);
 vector4 vector4_init(float x, float y, float z, float w);
 
 /**
+ Generates a random vector. 
+ Each component will be within
+ the range of (0.0f, 1.0f).
+ \return The randomly generated vector.
+ */
+vector4 rand_vector4();
+
+/**
  Constructs a quaternion vector from the input 'axis' (the w
  component of that vector will be ignored), and the input theta.
  \param axis Axis of rotation.
