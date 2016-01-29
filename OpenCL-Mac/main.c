@@ -21,6 +21,7 @@
 #include "camera.h"
 #include "vector.h"
 #include "material.h"
+#include "surface.h"
 
 #define __REAL_TIME__
 
@@ -65,19 +66,19 @@ int main(int argc, const char ** argv) {
 
     // surface data
     int num_surfaces = 2;
-    vector4 * spheres = (vector4 *)malloc(sizeof(vector4) * num_surfaces);
-    spheres[0] = vector4_init(-0, 0, 3, 0.3);
-    spheres[1] = vector4_init( 1.1, 0, 5, 1.0);
+    surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
+    spheres[0] = make_sphere(vector3_init(0, 0, 3), 0.3);
+    spheres[1] = make_sphere(vector3_init(1.1, 0, 5), 1.0);
 
     material * materials = (material *)malloc(sizeof(material) * num_surfaces);
     materials[0] = rand_material();
     materials[1] = rand_material();
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                     num_surfaces * sizeof(vector4), NULL, &err);
+                                     num_surfaces * sizeof(surface), NULL, &err);
     cl_check_err(err, "clCreateBuffer(...)");
     err = clEnqueueWriteBuffer(command_queue, surfaces, CL_TRUE, 0,
-                               num_surfaces * sizeof(vector4), spheres, 0, NULL, NULL);
+                               num_surfaces * sizeof(surface), spheres, 0, NULL, NULL);
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
     cl_mem mat = clCreateBuffer(context, CL_MEM_READ_ONLY,

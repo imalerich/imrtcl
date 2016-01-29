@@ -9,11 +9,13 @@
 #ifndef vector_h
 #define vector_h
 
+#include "cl_util.h"
+
 typedef struct {
-    float x;
-    float y;
-    float z;
-    float w;
+    cl_float x;
+    cl_float y;
+    cl_float z;
+    cl_float w;
 } vector4;
 
 /**

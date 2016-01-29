@@ -24,6 +24,7 @@
 		B9A960DF1C502A06004936B5 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A960DE1C502A06004936B5 /* CoreVideo.framework */; };
 		B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A41C4C5D1D002E1ACF /* file_io.c */; };
 		B9B4C9A91C4C5DEE002E1ACF /* cl_util.c in Sources */ = {isa = PBXBuildFile; fileRef = B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */; };
+		B9F889A31C5AD6E700346281 /* surface.c in Sources */ = {isa = PBXBuildFile; fileRef = B9F889A11C5AD6E700346281 /* surface.c */; };
 		B9FBFA141C59C70C0008A9C3 /* material.c in Sources */ = {isa = PBXBuildFile; fileRef = B9FBFA121C59C70C0008A9C3 /* material.c */; };
 /* End PBXBuildFile section */
 
@@ -67,6 +68,8 @@
 		B9B4C9A51C4C5D1D002E1ACF /* file_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_io.h; sourceTree = "<group>"; };
 		B9B4C9A71C4C5DEE002E1ACF /* cl_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cl_util.c; sourceTree = "<group>"; };
 		B9B4C9A81C4C5DEE002E1ACF /* cl_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cl_util.h; sourceTree = "<group>"; };
+		B9F889A11C5AD6E700346281 /* surface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = surface.c; sourceTree = "<group>"; };
+		B9F889A21C5AD6E700346281 /* surface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = surface.h; sourceTree = "<group>"; };
 		B9FBFA121C59C70C0008A9C3 /* material.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = material.c; sourceTree = "<group>"; };
 		B9FBFA131C59C70C0008A9C3 /* material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = material.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -160,6 +163,8 @@
 				B9FBFA131C59C70C0008A9C3 /* material.h */,
 				B94B52141C57DA2C006DCD3C /* mat4x4.c */,
 				B94B52151C57DA2C006DCD3C /* mat4x4.h */,
+				B9F889A11C5AD6E700346281 /* surface.c */,
+				B9F889A21C5AD6E700346281 /* surface.h */,
 				B94200A51C5152F50069D951 /* gl_util.c */,
 				B94200A61C5152F50069D951 /* gl_util.h */,
 				B9B4C9A41C4C5D1D002E1ACF /* file_io.c */,
@@ -235,6 +240,7 @@
 				B9B4C9A61C4C5D1D002E1ACF /* file_io.c in Sources */,
 				B92CD7881C4B3998003E2909 /* main.c in Sources */,
 				B9438FA71C4F183C007BA831 /* nbody_sim.cl in Sources */,
+				B9F889A31C5AD6E700346281 /* surface.c in Sources */,
 				B9B4C9A91C4C5DEE002E1ACF /* cl_util.c in Sources */,
 				B9141C911C5295F9000F8AD1 /* gl_sample.cl in Sources */,
 				B9438FA81C4F183C007BA831 /* ray_tracer.cl in Sources */,

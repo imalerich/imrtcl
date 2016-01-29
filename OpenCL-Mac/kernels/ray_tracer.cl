@@ -4,9 +4,9 @@
 #define SURFACE_PLANE   1
 #define SURFACE_AA_CUBE 2
 
-typedef struct {
-    int shape_id;   // ie. SHAPE_SPHERE
+typedef struct __attribute__ ((packed)) {
     float8 data;    // all data should be packed into this component
+    int shape_id;   // ie. SHAPE_SPHERE
 } surface;
 
 typedef struct {
@@ -25,8 +25,9 @@ float8 calculate_ray (float4 camera_pos, float4 camera_look,
 float4 point_on_sphere(float4 sphere, uint * seed);
 float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
 uint rand(uint * seed);
-int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n, float4 * intersect, float4 * norm);
-int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n);
+int intersect_ray_surfaces(float8 ray, __global surface * surfaces, int n, float4 * intersect, float4 * norm);
+int intersect_ray_any_surface(float8 ray, __global surface * surfaces, int n);
+bool intersect_ray_surface(float8 ray, surface surface, float4 * intersect, float4 * norm);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 
 /*
@@ -51,7 +52,7 @@ __kernel void ray_tracer(
 
         // scene information
         float4 light_pos,
-        __global float4 * surfaces,
+        __global surface * surfaces,
         __global material * materials,
         int n_surfaces,
 
@@ -186,7 +187,7 @@ uint rand(uint * seed) {
  is returned as an index into the surfaces array. If an intersection 
  does not occur -1 will be returned.
  */
-int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n,
+int intersect_ray_surfaces(float8 ray, __global surface * surfaces, int n,
                            float4 * intersect, float4 * norm) {
     int hit = -1;
     float min_dist = -1;
@@ -195,7 +196,7 @@ int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n,
     // for each surface
     for (int i = 0; i < n; i++) {
         // check if the input ray hits the input surface
-        if (intersect_ray_sphere(ray, surfaces[i], &tmp_i, &tmp_n)) {
+        if (intersect_ray_surface(ray, surfaces[i], &tmp_i, &tmp_n)) {
             float dist = length(tmp_i - ray.lo);
 
             // ignore the intersection if it is not closer than the last
@@ -219,15 +220,27 @@ int intersect_ray_surfaces(float8 ray, __global float4 * surfaces, int n,
  occurs. Use this when you need to know if an intersectino occurs, but 
  not the which surfaces is nearest to the rays origin.
  */
-int intersect_ray_any_surface(float8 ray, __global float4 * surfaces, int n) {
+int intersect_ray_any_surface(float8 ray, __global surface * surfaces, int n) {
     // loop through each surface and try to find an intersection
     for (int i = 0; i < n; i++) {
-        if (intersect_ray_sphere(ray, surfaces[i], 0, 0)) {
+        if (intersect_ray_surface(ray, surfaces[i], 0, 0)) {
             return 1;
         }
     }
 
     return -1;
+}
+
+/**
+ Redirects a ray intersection test to the proper function for 
+ the input surface type.
+ */
+bool intersect_ray_surface(float8 ray, surface surface, float4 * intersect, float4 * norm) {
+    if (surface.shape_id == SURFACE_SPHERE) {
+        return intersect_ray_sphere(ray, surface.data.lo, intersect, norm);
+    }
+
+    return false;
 }
 
 /*

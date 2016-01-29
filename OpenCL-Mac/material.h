@@ -10,6 +10,7 @@
 #define MATERIAL_H
 
 #include "vector.h"
+#include "cl_util.h"
 
 /**
  Contains all necessary data that the kernel will
@@ -20,11 +21,11 @@
 typedef struct {
     vector4 diffuse;
 
-    float spec_scalar;
-    float spec_power;
+    cl_float spec_scalar;
+    cl_float spec_power;
 
-    float reflect;
-    float refract;
+    cl_float reflect;
+    cl_float refract;
 } material;
 
 /**
