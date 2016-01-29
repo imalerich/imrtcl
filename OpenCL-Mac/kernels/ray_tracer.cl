@@ -29,6 +29,8 @@ int intersect_ray_surfaces(float8 ray, __global surface * surfaces, int n, float
 int intersect_ray_any_surface(float8 ray, __global surface * surfaces, int n);
 bool intersect_ray_surface(float8 ray, surface surface, float4 * intersect, float4 * norm);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
+bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm);
+bool intersect_ray_aa_cube(float8 ray, float8 cube, float4 * intersect, float4 * norm);
 
 /*
  Generates an image buffer by ray tracing each pixel
@@ -76,6 +78,17 @@ __kernel void ray_tracer(
     float4 norm, intersect;
     int hit = intersect_ray_surfaces(ray, surfaces, n_surfaces, &intersect, &norm);
 
+    float4 light_intersect;
+    if (intersect_ray_sphere(ray, light_pos, &light_intersect, 0)) {
+        float pd = length(intersect - ray.lo);
+        float ld = length(light_intersect - ray.lo);
+
+        if (ld <= pd) {
+            write_imagef(output, (int2){x_pos, y_pos}, (float4)1.0);
+            return;
+        }
+    }
+
     if (hit >= 0) {
         float d = 0.0;
 
@@ -88,7 +101,7 @@ __kernel void ray_tracer(
             float sample_d = 10.0f/255.0f;
 
             if (intersect_ray_any_surface((float8){intersect, l_dir}, surfaces, n_surfaces) < 0) {
-                sample_d = max(scalar_for_lighting(ray, l_dir, norm, materials[hit]), 10/255.0f);
+                sample_d = max(scalar_for_lighting(ray, l_dir, norm, materials[hit]), 30/255.0f);
             }
 
             // add this samples contribution to the overall lighting
@@ -236,19 +249,24 @@ int intersect_ray_any_surface(float8 ray, __global surface * surfaces, int n) {
  the input surface type.
  */
 bool intersect_ray_surface(float8 ray, surface surface, float4 * intersect, float4 * norm) {
-    if (surface.shape_id == SURFACE_SPHERE) {
-        return intersect_ray_sphere(ray, surface.data.lo, intersect, norm);
-    }
+    switch (surface.shape_id) {
+        case SURFACE_SPHERE:
+            return intersect_ray_sphere(ray, surface.data.lo, intersect, norm);
 
-    return false;
+        case SURFACE_PLANE:
+            return intersect_ray_plane(ray, surface.data, intersect, norm);
+
+        case SURFACE_AA_CUBE:
+            return intersect_ray_aa_cube(ray, surface.data, intersect, norm);
+
+        default:
+            return false;
+    }
 }
 
 /*
  Determines whether or not the input ray intersects
  with the given input sphere.
- The low 4 components of the ray will be treated
- as the intial position, while the upper 4 componenents
- will be used as the rays direction vector.
  The spheres position in space will be treated as
  its .xyz components while its .w component will
  be used for the radius of the sphere.
@@ -275,8 +293,11 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
         }
 
         if (d > EPSILON) {
-            if (intersect && norm) {
+            if (intersect) {
                 (*intersect) = ray.lo + d * ray.hi;
+            }
+
+            if (norm) {
                 (*norm) = normalize(*intersect - center);
             }
 
@@ -285,4 +306,43 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
             return 0;
         }
     }
+}
+
+/*
+ Determines whether or not the input ray
+ intersects with the given input plane.
+ Plane.lo will be treated as a point on 
+ the input plane, while Plane.hi will serve
+ as the normal vector for the plane.
+ */
+bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm) {
+    // the plane and the ray are parallel
+    if (abs(dot(ray.hi, plane.hi) < EPSILON)) {
+        return false;
+    }
+
+    float n = dot(plane.lo - ray.lo, plane.hi);
+    float d = n / dot(ray.hi, plane.hi);
+
+    if (d > EPSILON) {
+        (*intersect) = ray.lo + ray.hi * d;
+        (*norm) = -plane.hi;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+/*
+ Determines whether or not the input ray
+ intersects with the given input aa-cube.
+ Cube.lo will be treated as the minimum position
+ of the cube, representing the minimu values
+ on each cardinal axis. While cube.hi will
+ be treated as just the opposite, as the maximum
+ position of the cube.
+ */
+bool intersect_ray_aa_cube(float8 ray, float8 cube, float4 * intersect, float4 * norm) {
+    return false;
 }

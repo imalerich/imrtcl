@@ -65,14 +65,16 @@ int main(int argc, const char ** argv) {
     camera.up       = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
 
     // surface data
-    int num_surfaces = 2;
+    int num_surfaces = 3;
     surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
-    spheres[0] = make_sphere(vector3_init(0, 0, 3), 0.3);
+    spheres[2] = make_sphere(vector3_init(0, 0, 3), 0.3);
     spheres[1] = make_sphere(vector3_init(1.1, 0, 5), 1.0);
+    spheres[0] = make_plane(vector3_init(0, 0, 18), vector3_init(0, 0, 1));
 
     material * materials = (material *)malloc(sizeof(material) * num_surfaces);
     materials[0] = rand_material();
     materials[1] = rand_material();
+    materials[2] = diffuse_material(rand_vector4());
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      num_surfaces * sizeof(surface), NULL, &err);
@@ -114,7 +116,7 @@ int main(int argc, const char ** argv) {
         set_camera_kernel_args();
 
 #ifdef __REAL_TIME__
-        render_cl(time += 1/60.0f);
+        render_cl(time += 2/60.0f);
 #endif
         present_gl();
 
@@ -176,7 +178,7 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector4_init(10 * sin(time), 0.0, 10 * cos(time) + 5.0, 1.0);
+    vector4 light_pos = vector4_init(2 * sin(time), 0.0, 3 * cos(time) + 5.0, 0.3);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
