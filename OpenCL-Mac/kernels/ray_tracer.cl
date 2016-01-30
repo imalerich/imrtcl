@@ -22,6 +22,9 @@ typedef struct {
 // function prototypes
 float8 calculate_ray (float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
+float4 color_for_ray(float8 ray, float4 light_pos, __global surface * surfaces,
+                     __global material * materials, int n_surfaces,
+                     int * hit_index, float4 * intersect, float4 * norm, int * seed);
 float4 point_on_sphere(float4 sphere, uint * seed);
 float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
 uint rand(uint * seed);
@@ -74,46 +77,67 @@ __kernel void ray_tracer(
 
     float8 ray = calculate_ray(camera_pos, camera_look, camera_right, camera_up);
 
+    int hit_index;
     float4 norm, intersect;
-    int hit = intersect_ray_surfaces(ray, surfaces, n_surfaces, &intersect, &norm);
+
+    float4 color = color_for_ray(ray, light_pos, surfaces, materials, n_surfaces,
+                                 &hit_index, &intersect, &norm, &seed);
+    write_imagef(output, (int2){x_pos, y_pos}, color);
+}
+
+/*
+ Computes the color component for the input 'ray'.
+ */
+float4 color_for_ray(
+                     float8 ray,
+                     float4 light_pos,
+                     __global surface * surfaces,
+                     __global material * materials,
+                     int n_surfaces,
+                     int * hit_index,
+                     float4 * intersect,
+                     float4 * norm,
+                     int * seed
+                     ) {
+
+    *hit_index = intersect_ray_surfaces(ray, surfaces, n_surfaces, intersect, norm);
 
     float4 light_intersect;
     if (intersect_ray_sphere(ray, light_pos, &light_intersect, 0)) {
-        float pd = length(intersect - ray.lo);
+        float pd = length(*intersect - ray.lo);
         float ld = length(light_intersect - ray.lo);
 
         if (ld <= pd) {
-            write_imagef(output, (int2){x_pos, y_pos}, (float4)1.0);
-            return;
+            return (float4)1.0f;
         }
     }
 
-    if (hit >= 0) {
+    if (*hit_index >= 0) {
         float d = 0.0;
 
         // check if the light is visible from this point
         int l_samples = light_pos.w > 0.0 ? 32 : 1;
         for (int l = 0; l < l_samples; l++) {
-            float4 sample_pos = point_on_sphere(light_pos, &seed);
+            float4 sample_pos = point_on_sphere(light_pos, seed);
 
-            float l_dist = length(sample_pos - intersect);
-            float4 l_dir = normalize(sample_pos - intersect);
+            float l_dist = length(sample_pos - *intersect);
+            float4 l_dir = normalize(sample_pos - *intersect);
             float sample_d = 10.0f/255.0f;
 
             float4 l_int;
-            if (intersect_ray_surfaces((float8){intersect, l_dir},
+            if (intersect_ray_surfaces((float8){*intersect, l_dir},
                                        surfaces, n_surfaces, &l_int, 0) < 0 ||
-                length(intersect - l_int) > l_dist) {
-                sample_d = max(scalar_for_lighting(ray, l_dir, norm, materials[hit]), 30/255.0f);
+                length(*intersect - l_int) > l_dist) {
+                sample_d = max(scalar_for_lighting(ray, l_dir, *norm, materials[*hit_index]), 30/255.0f);
             }
 
             // add this samples contribution to the overall lighting
             d += sample_d / (float)l_samples;
         }
 
-        write_imagef(output, (int2){x_pos, y_pos}, (float4)(d, d, d, 1.0) * materials[hit].diffuse);
+        return (float4)(d, d, d, 1.0) * materials[*hit_index].diffuse;
     } else {
-        write_imagef(output, (int2){x_pos, y_pos}, (float4){49/255.0, 51/255.0, 71/255.0, 1.0});
+        return (float4){49/255.0, 51/255.0, 71/255.0, 1.0};
     }
 }
 

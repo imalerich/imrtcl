@@ -178,7 +178,7 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector4_init(5 * sin(time), 0.0, 5 * cos(time) + 5.0, 0.1);
+    vector4 light_pos = vector4_init(5 * sin(time), 0.0, 5 * cos(time) + 5.0, 0.0);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
