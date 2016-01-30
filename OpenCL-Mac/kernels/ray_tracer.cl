@@ -26,7 +26,6 @@ float4 point_on_sphere(float4 sphere, uint * seed);
 float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
 uint rand(uint * seed);
 int intersect_ray_surfaces(float8 ray, __global surface * surfaces, int n, float4 * intersect, float4 * norm);
-int intersect_ray_any_surface(float8 ray, __global surface * surfaces, int n);
 bool intersect_ray_surface(float8 ray, surface surface, float4 * intersect, float4 * norm);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm);
@@ -97,10 +96,14 @@ __kernel void ray_tracer(
         for (int l = 0; l < l_samples; l++) {
             float4 sample_pos = point_on_sphere(light_pos, &seed);
 
+            float l_dist = length(sample_pos - intersect);
             float4 l_dir = normalize(sample_pos - intersect);
             float sample_d = 10.0f/255.0f;
 
-            if (intersect_ray_any_surface((float8){intersect, l_dir}, surfaces, n_surfaces) < 0) {
+            float4 l_int;
+            if (intersect_ray_surfaces((float8){intersect, l_dir},
+                                       surfaces, n_surfaces, &l_int, 0) < 0 ||
+                length(intersect - l_int) > l_dist) {
                 sample_d = max(scalar_for_lighting(ray, l_dir, norm, materials[hit]), 30/255.0f);
             }
 
@@ -225,23 +228,6 @@ int intersect_ray_surfaces(float8 ray, __global surface * surfaces, int n,
     }
 
     return hit;
-}
-
-/*
- Performs a similar intersection test to intersect_ray_surfaces(...),
- however this function will return immediately as soon as an intersection
- occurs. Use this when you need to know if an intersectino occurs, but 
- not the which surfaces is nearest to the rays origin.
- */
-int intersect_ray_any_surface(float8 ray, __global surface * surfaces, int n) {
-    // loop through each surface and try to find an intersection
-    for (int i = 0; i < n; i++) {
-        if (intersect_ray_surface(ray, surfaces[i], 0, 0)) {
-            return 1;
-        }
-    }
-
-    return -1;
 }
 
 /**

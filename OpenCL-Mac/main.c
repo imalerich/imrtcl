@@ -67,9 +67,9 @@ int main(int argc, const char ** argv) {
     // surface data
     int num_surfaces = 3;
     surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
-    spheres[2] = make_sphere(vector3_init(0, 0, 3), 0.3);
+    spheres[0] = make_sphere(vector3_init(0, 0, 3), 0.3);
     spheres[1] = make_sphere(vector3_init(1.1, 0, 5), 1.0);
-    spheres[0] = make_plane(vector3_init(0, 0, 18), vector3_init(0, 0, 1));
+    spheres[2] = make_plane(vector3_init(0, 0, 18), vector3_init(0, 0, 1));
 
     material * materials = (material *)malloc(sizeof(material) * num_surfaces);
     materials[0] = rand_material();
@@ -178,7 +178,7 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector4_init(2 * sin(time), 0.0, 3 * cos(time) + 5.0, 0.3);
+    vector4 light_pos = vector4_init(5 * sin(time), 0.0, 5 * cos(time) + 5.0, 0.1);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
