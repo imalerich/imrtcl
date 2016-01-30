@@ -65,16 +65,21 @@ int main(int argc, const char ** argv) {
     camera.up       = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
 
     // surface data
-    int num_surfaces = 3;
+    int num_surfaces = 3 * 3;
     surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
-    spheres[0] = make_sphere(vector3_init(0, 0, 3), 0.3);
-    spheres[1] = make_sphere(vector3_init(1.1, 0, 5), 1.0);
-    spheres[2] = make_plane(vector3_init(0, 0, 18), vector3_init(0, 0, 1));
+
+    for (int x = 0; x < 3; x++) {
+        for (int y = 0; y < 3; y++) {
+            float x_pos = x - 1.0f;
+            float y_pos = y - 1.0f;
+            spheres[y * 3 + x] = make_sphere(vector3_init(x_pos, y_pos, 5), 0.5);
+        }
+    }
 
     material * materials = (material *)malloc(sizeof(material) * num_surfaces);
-    materials[0] = rand_material();
-    materials[1] = rand_material();
-    materials[2] = diffuse_material(rand_vector4());
+    for (int i = 0; i < num_surfaces; i++) {
+        materials[i] = rand_material();
+    }
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      num_surfaces * sizeof(surface), NULL, &err);
@@ -178,7 +183,7 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector4_init(5 * sin(time), 0.0, 5 * cos(time) + 5.0, 0.0);
+    vector4 light_pos = vector4_init(5 * sin(time), 0.0, 5 * cos(time) + 5.0, 0.2);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");

@@ -78,10 +78,32 @@ __kernel void ray_tracer(
     float8 ray = calculate_ray(camera_pos, camera_look, camera_right, camera_up);
 
     int hit_index;
+    float reflect = 1.0f;
     float4 norm, intersect;
+    float4 color = (float4)0.0f;
 
-    float4 color = color_for_ray(ray, light_pos, surfaces, materials, n_surfaces,
-                                 &hit_index, &intersect, &norm, &seed);
+    // grab all of our lighting samples
+    for (int i = 0; i < 2; i++) {
+        // get the current color
+        float4 c = color_for_ray(ray, light_pos, surfaces, materials, n_surfaces,
+                              &hit_index, &intersect, &norm, &seed);
+
+        // apply reflection
+        if (hit_index < 0) {
+            color += c * reflect;
+            break;
+        } if (materials[hit_index].reflect > EPSILON) {
+            color += c * (1.0f - materials[hit_index].reflect) * reflect;
+            reflect = materials[hit_index].reflect;
+        } else {
+            break;
+        }
+
+        // update the ray
+        float reflect = 2.0f * dot(ray.hi, norm);
+        ray = (float8){intersect, ray.hi - norm * reflect};
+    }
+
     write_imagef(output, (int2){x_pos, y_pos}, color);
 }
 
