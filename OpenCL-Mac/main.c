@@ -65,7 +65,7 @@ int main(int argc, const char ** argv) {
     camera.up       = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
 
     // surface data
-    int num_surfaces = 3 * 3;
+    int num_surfaces = 3 * 3 + 1;
     surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
 
     for (int x = 0; x < 3; x++) {
@@ -75,6 +75,8 @@ int main(int argc, const char ** argv) {
             spheres[y * 3 + x] = make_sphere(vector3_init(x_pos, y_pos, 5), 0.5);
         }
     }
+
+    spheres[9] = make_plane(vector3_init(0, 0, 10), vector3_init(0, 0, 1));
 
     material * materials = (material *)malloc(sizeof(material) * num_surfaces);
     for (int i = 0; i < num_surfaces; i++) {
@@ -183,7 +185,7 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector4_init(5 * sin(time), 0.0, 5 * cos(time) + 5.0, 0.2);
+    vector4 light_pos = vector4_init(5 * sin(time), 0.0, 5 * cos(time) + 5.0, 0.0);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");

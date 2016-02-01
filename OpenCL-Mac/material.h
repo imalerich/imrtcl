@@ -39,4 +39,10 @@ material rand_material();
  */
 material diffuse_material(vector4 diffuse);
 
+/**
+ Utility to generate a simple material with only
+ diffuse and specular components.
+ */
+material specular_material(vector4 diffuse, float spec_scalar, float spec_power);
+
 #endif

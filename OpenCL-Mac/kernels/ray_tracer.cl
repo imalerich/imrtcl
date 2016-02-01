@@ -26,7 +26,8 @@ float4 color_for_ray(float8 ray, float4 light_pos, __global surface * surfaces,
                      __global material * materials, int n_surfaces,
                      int * hit_index, float4 * intersect, float4 * norm, int * seed);
 float4 point_on_sphere(float4 sphere, uint * seed);
-float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
+float scalar_for_lighting(float4 l_dir, float4 norm);
+float specular_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
 uint rand(uint * seed);
 int intersect_ray_surfaces(float8 ray, __global surface * surfaces, int n, float4 * intersect, float4 * norm);
 bool intersect_ray_surface(float8 ray, surface surface, float4 * intersect, float4 * norm);
@@ -83,7 +84,7 @@ __kernel void ray_tracer(
     float4 color = (float4)0.0f;
 
     // grab all of our lighting samples
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
         // get the current color
         float4 c = color_for_ray(ray, light_pos, surfaces, materials, n_surfaces,
                               &hit_index, &intersect, &norm, &seed);
@@ -96,6 +97,7 @@ __kernel void ray_tracer(
             color += c * (1.0f - materials[hit_index].reflect) * reflect;
             reflect = materials[hit_index].reflect;
         } else {
+            color += c * reflect;
             break;
         }
 
@@ -135,7 +137,8 @@ float4 color_for_ray(
     }
 
     if (*hit_index >= 0) {
-        float d = 0.0;
+        float diff = 0.0;
+        float spec = 0.0;
 
         // check if the light is visible from this point
         int l_samples = light_pos.w > 0.0 ? 32 : 1;
@@ -145,21 +148,27 @@ float4 color_for_ray(
             float l_dist = length(sample_pos - *intersect);
             float4 l_dir = normalize(sample_pos - *intersect);
             float sample_d = 10.0f/255.0f;
+            float sample_s = 0.0f;
 
             float4 l_int;
             if (intersect_ray_surfaces((float8){*intersect, l_dir},
-                                       surfaces, n_surfaces, &l_int, 0) < 0 ||
-                length(*intersect - l_int) > l_dist) {
-                sample_d = max(scalar_for_lighting(ray, l_dir, *norm, materials[*hit_index]), 30/255.0f);
+                                       surfaces, n_surfaces, &l_int, 0) < 0
+                                       || length(*intersect - l_int) > l_dist) {
+                // calculate the lighting compontnets for this point
+                sample_d = max(scalar_for_lighting(l_dir, *norm), sample_d);
+                sample_s = max(specular_for_lighting(ray, l_dir, *norm,
+                                                   materials[*hit_index]), sample_d);
             }
 
             // add this samples contribution to the overall lighting
-            d += sample_d / (float)l_samples;
+            diff += sample_d / (float)l_samples;
+            spec += sample_s / (float)l_samples;
         }
 
-        return (float4)(d, d, d, 1.0) * materials[*hit_index].diffuse;
+        return (float4)((float3)diff, 1.0) * materials[*hit_index].diffuse +
+            (float4)1.0f * max(spec * diff, 0.0f);
     } else {
-        return (float4){49/255.0, 51/255.0, 71/255.0, 1.0};
+        return (float4){0/255.0, 0/255.0, 0/255.0, 1.0};
     }
 }
 
@@ -168,16 +177,19 @@ float4 color_for_ray(
  The function will then return a scalar in the range of 0.0f -> 1.0f
  for the given point.
  */
-float scalar_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat) {
-    norm = normalize(norm);
-    float l = dot(l_dir, norm);
+float scalar_for_lighting(float4 l_dir, float4 norm) {
+    return max(min(dot(l_dir, normalize(norm)), 1.0f), 0.0f);
+}
 
+/*
+ Calculates the specular component for a given point using
+ the Blinn-Phong method.
+ */
+float specular_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat) {
     // Blinn-Phong
     float4 b_dir = normalize(l_dir - ray.hi);
     float blinn = dot(b_dir, norm);
-    float spec = mat.spec_scalar * pow(blinn, mat.spec_power);
-
-    return max(min(l + spec, 1.0f), 0.0f);
+    return mat.spec_scalar * pow(blinn, mat.spec_power);
 }
 
 /*
@@ -358,7 +370,7 @@ bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * 
 
     if (d > EPSILON) {
         (*intersect) = ray.lo + ray.hi * d;
-        (*norm) = -plane.hi;
+        (*norm) = plane.hi;
         return true;
     } else {
         return false;
