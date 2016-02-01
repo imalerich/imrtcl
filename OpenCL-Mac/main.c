@@ -76,7 +76,7 @@ int main(int argc, const char ** argv) {
         }
     }
 
-    spheres[9] = make_plane(vector3_init(0, 0, 10), vector3_init(0, 0, 1));
+    spheres[9] = make_plane(vector3_init(0, 0, 20), vector3_init(0, 0, 1));
 
     material * materials = (material *)malloc(sizeof(material) * num_surfaces);
     for (int i = 0; i < num_surfaces; i++) {

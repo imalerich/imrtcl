@@ -157,7 +157,7 @@ float4 color_for_ray(
                 // calculate the lighting compontnets for this point
                 sample_d = max(scalar_for_lighting(l_dir, *norm), sample_d);
                 sample_s = max(specular_for_lighting(ray, l_dir, *norm,
-                                                   materials[*hit_index]), sample_d);
+                                                   materials[*hit_index]), sample_s);
             }
 
             // add this samples contribution to the overall lighting
@@ -360,6 +360,9 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
  as the normal vector for the plane.
  */
 bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm) {
+    ray.hi = normalize(ray.hi);
+    plane.hi = normalize(plane.hi);
+
     // the plane and the ray are parallel
     if (abs(dot(ray.hi, plane.hi) < EPSILON)) {
         return false;
@@ -370,7 +373,7 @@ bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * 
 
     if (d > EPSILON) {
         (*intersect) = ray.lo + ray.hi * d;
-        (*norm) = plane.hi;
+        (*norm) = -plane.hi;
         return true;
     } else {
         return false;
