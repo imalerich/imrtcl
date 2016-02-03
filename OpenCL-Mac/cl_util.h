@@ -16,7 +16,7 @@
     #include <OpenCL/cl_gl.h>
 #else
     #include <CL/cl.h>
-	#include <CL/cl_gl.h>
+    #include <CL/cl_gl.h>
 #endif
 
 // OpenCL device and program representations

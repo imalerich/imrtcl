@@ -5,3 +5,4 @@ lib
 *.o
 *.swp
 *.csv
+*.dll
