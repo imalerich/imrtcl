@@ -1,4 +1,4 @@
-#define EPSILON 0.00000000001
+#define EPSILON 0.001
 
 #define SURFACE_SPHERE  0
 #define SURFACE_PLANE   1
@@ -79,9 +79,9 @@ __kernel void ray_tracer(
     float8 ray = calculate_ray(camera_pos, camera_look, camera_right, camera_up);
 
     int hit_index;
-    float reflect = 1.0f;
-    float4 norm, intersect;
-    float4 color = (float4)0.0f;
+    float4 norm, intersect; // surface intersection information
+    float reflect = 1.0f; // percentage of color to use
+    float4 color = (float4)0.0f; // sum of all color samples
 
     // grab all of our lighting samples
     for (int i = 0; i < 3; i++) {
@@ -89,21 +89,18 @@ __kernel void ray_tracer(
         float4 c = color_for_ray(ray, light_pos, surfaces, materials, n_surfaces,
                               &hit_index, &intersect, &norm, &seed);
 
+        // update the ray
+        float r = 2.0f * dot(ray.hi, norm);
+        ray = (float8){intersect, ray.hi - norm * r};
+
         // apply reflection
-        if (hit_index < 0) {
-            color += c * reflect;
-            break;
-        } if (materials[hit_index].reflect > EPSILON) {
+        if (hit_index >= 0 && materials[hit_index].reflect > EPSILON) {
             color += c * (1.0f - materials[hit_index].reflect) * reflect;
             reflect = materials[hit_index].reflect;
         } else {
             color += c * reflect;
             break;
         }
-
-        // update the ray
-        float reflect = 2.0f * dot(ray.hi, norm);
-        ray = (float8){intersect, ray.hi - norm * reflect};
     }
 
     write_imagef(output, (int2){x_pos, y_pos}, color);
@@ -166,9 +163,9 @@ float4 color_for_ray(
         }
 
         return (float4)((float3)diff, 1.0) * materials[*hit_index].diffuse +
-            (float4)1.0f * max(spec * diff, 0.0f);
+        (float4)(1.0f, 1.0f, 1.0f, 0.0f) * max(spec * diff, 0.0f);
     } else {
-        return (float4){0/255.0, 0/255.0, 0/255.0, 1.0};
+        return (float4)0.0f;
     }
 }
 
@@ -304,7 +301,7 @@ bool intersect_ray_surface(float8 ray, surface surface, float4 * intersect, floa
             return intersect_ray_aa_cube(ray, surface.data, intersect, norm);
 
         default:
-            return false;
+            return 0;
     }
 }
 
@@ -329,7 +326,7 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
     } else {
         float d = -(b + sqrt(delta)) / (2 * a);
 
-        if (d > EPSILON) {
+        if (fabs(delta) > EPSILON) {
             float d0 = (-b - sqrt(delta)) / (2 * a);
             float d1 = (-b + sqrt(delta)) / (2 * a);
 
@@ -342,7 +339,8 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
             }
 
             if (norm) {
-                (*norm) = normalize(*intersect - center);
+                float4 i = ray.lo + d * ray.hi;
+                (*norm) = normalize(i - center);
             }
 
             return 1;
@@ -360,12 +358,9 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
  as the normal vector for the plane.
  */
 bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm) {
-    ray.hi = normalize(ray.hi);
-    plane.hi = normalize(plane.hi);
-
     // the plane and the ray are parallel
-    if (abs(dot(ray.hi, plane.hi) < EPSILON)) {
-        return false;
+    if (fabs(dot(ray.hi, plane.hi)) < EPSILON) {
+        return 0;
     }
 
     float n = dot(plane.lo - ray.lo, plane.hi);
@@ -373,13 +368,12 @@ bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * 
 
     if (d > EPSILON) {
         (*intersect) = ray.lo + ray.hi * d;
-        (*norm) = -plane.hi;
-        return true;
+        (*norm) = plane.hi;
+        return 1;
     } else {
-        return false;
+        return 0;
     }
 }
-
 
 /*
  Determines whether or not the input ray
