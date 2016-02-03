@@ -1,5 +1,5 @@
 OCM = OpenCL-Mac
-OBJ = main.o cl_util.o file_io.o gl_util.o vector.o camera.o
+OBJ = main.o cl_util.o file_io.o gl_util.o vector.o camera.o material.o surface.o
 LIB = -lOpenCL -lglfw -lGLEW -lGL -lGLU -lX11 -lXxf86vm -lXrandr -lXi -lglut
 
 all: $(OBJ)
@@ -22,6 +22,11 @@ vector.o: $(OCM)/vector.c $(OCM)/vector.h
 
 camera.o: $(OCM)/camera.c $(OCM)/camera.h vector.o
 	g++ -c $(OCM)/camera.c
+
+material.o: $(OCM)/material.c $(OCM)/material.h vector.o
+	g++ -c $(INC) $(OCM)/material.c
+
+surface.o: $(OCM)/surface.c $(OCM)/surface.h vector.o
 
 clean:
 	rm -rf cl
