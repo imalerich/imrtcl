@@ -23,7 +23,7 @@
 #include "material.h"
 #include "surface.h"
 
-#define __REAL_TIME__
+//#define __REAL_TIME__
 
 const char * window_title = "RayTracer - OpenCL";
 const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
@@ -61,25 +61,24 @@ int main(int argc, const char ** argv) {
     camera = init_camera(M_PI / 2.0f, 1.0f, screen_w / (float)screen_h);
 
     // surface data
-    int num_surfaces = 10;
+    static const unsigned dimm = 10;
+    int num_surfaces = dimm * dimm + 1;
     surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
 
-    for (int x = 0; x < 3; x++) {
-        for (int y = 0; y < 3; y++) {
-            float x_pos = 1.05 * (x - 1.0f);
-            float y_pos = 1.05 * (y - 1.0f);
-            spheres[y * 3 + x] = make_sphere(vector3_init(x_pos, y_pos, 10), 0.5);
+    for (int x = 0; x < dimm; x++) {
+        for (int y = 0; y < dimm; y++) {
+            float x_pos = x - dimm / 2.0f;
+            float y_pos = y - dimm / 2.0f;
+            spheres[y * dimm + x] = make_sphere(vector3_init(x_pos, y_pos, 10), 0.5);
         }
     }
 
-    spheres[9] = make_plane(vector3_init(0, 0, 10.5f), vector3_init(0, 0, -1));
+    spheres[dimm * dimm] = make_plane(vector3_init(0, 0, 10.5f), vector3_init(0, 0, -1));
 
     material * materials = (material *)malloc(sizeof(material) * num_surfaces);
     for (int i = 0; i < num_surfaces; i++) {
         materials[i] = rand_material();
     }
-
-//    materials[9] = diffuse_material(vector3_init(1, 0, 0.4));
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      num_surfaces * sizeof(surface), NULL, &err);
@@ -110,8 +109,10 @@ int main(int argc, const char ** argv) {
     float time = 1.8f;
 
 #ifndef __REAL_TIME__
+    glfwSetTime(0.0f);
     set_camera_kernel_args();
     render_cl(time = 3.5);
+    printf("Rendered in %f seconds.\n", glfwGetTime());
 #endif
 
     glfwSetTime(0.0f);
@@ -184,7 +185,7 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 0.0);
+    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 1.0);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");

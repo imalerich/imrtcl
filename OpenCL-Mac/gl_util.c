@@ -97,6 +97,7 @@ void init_gl(const char * title, int v_sync) {
 
 void update_screen() {
     // update the frame counter information
+#ifdef __REAL_TIME__
     current_time += (time_passed = glfwGetTime() - last_time);
     if (current_time > 1.0f) {
         fps = frame_count / current_time;
@@ -104,11 +105,14 @@ void update_screen() {
         current_time = 0.0f;
         frame_count = 0;
     }
+#endif
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+#ifdef __REAL_TIME__
     frame_count++;
     last_time = glfwGetTime();
+#endif
 }
 
 void init_screen_rect() {
