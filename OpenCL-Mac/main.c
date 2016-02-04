@@ -35,7 +35,7 @@ vector4 get_cam_rot();
 void render_cl(float time);
 void present_gl();
 
-static struct cam_data camera;
+static cam_data camera;
 
 /**
  Application entry point. Here we will create the OpenCL context,
@@ -58,11 +58,7 @@ int main(int argc, const char ** argv) {
      buffer using OpenCL, then swap the OpenGL display buffers.
      ----------------------------------------------------------- */
 
-    // camera data
-    camera.pos      = zero_vector4();
-    camera.look     = vector3_init(0.0, 0.0, 1.0);
-    camera.right    = vector3_init(1.0, 0.0, 0.0);
-    camera.up       = vector3_init(0.0, screen_h/(float)screen_w, 0.0);
+    camera = init_camera(M_PI / 2.0f, 1.0f, screen_w / (float)screen_h);
 
     // surface data
     int num_surfaces = 10;
@@ -70,8 +66,8 @@ int main(int argc, const char ** argv) {
 
     for (int x = 0; x < 3; x++) {
         for (int y = 0; y < 3; y++) {
-            float x_pos = 1.0 * (x - 1.0f);
-            float y_pos = 1.0 * (y - 1.0f);
+            float x_pos = 1.05 * (x - 1.0f);
+            float y_pos = 1.05 * (y - 1.0f);
             spheres[y * 3 + x] = make_sphere(vector3_init(x_pos, y_pos, 10), 0.5);
         }
     }
@@ -83,7 +79,7 @@ int main(int argc, const char ** argv) {
         materials[i] = rand_material();
     }
 
-    materials[0] = diffuse_material(vector3_init(1, 0, 0.4));
+//    materials[9] = diffuse_material(vector3_init(1, 0, 0.4));
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      num_surfaces * sizeof(surface), NULL, &err);
@@ -188,7 +184,7 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector3_init(8 * sin(time), 8 * cos(time), 0.0);
+    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 0.0);
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");

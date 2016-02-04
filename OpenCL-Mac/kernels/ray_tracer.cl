@@ -84,7 +84,7 @@ __kernel void ray_tracer(
     float4 color = (float4)0.0f; // sum of all color samples
 
     // grab all of our lighting samples
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         // get the current color
         float4 c = color_for_ray(ray, light_pos, surfaces, materials, n_surfaces,
                               &hit_index, &intersect, &norm, &seed);
@@ -138,7 +138,7 @@ float4 color_for_ray(
         float spec = 0.0;
 
         // check if the light is visible from this point
-        int l_samples = light_pos.w > 0.0 ? 32 : 1;
+        int l_samples = light_pos.w > 0.0 ? 16 : 1;
         for (int l = 0; l < l_samples; l++) {
             float4 sample_pos = point_on_sphere(light_pos, seed);
 
