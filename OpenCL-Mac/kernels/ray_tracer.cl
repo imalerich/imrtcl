@@ -138,7 +138,7 @@ float4 color_for_ray(
         float spec = 0.0;
 
         // check if the light is visible from this point
-        int l_samples = light_pos.w > 0.0 ? 16 : 1;
+        int l_samples = light_pos.w > 0.0 ? 128 : 1;
         for (int l = 0; l < l_samples; l++) {
             float4 sample_pos = point_on_sphere(light_pos, seed);
 

@@ -23,8 +23,6 @@
 #include "material.h"
 #include "surface.h"
 
-//#define __REAL_TIME__
-
 const char * window_title = "RayTracer - OpenCL";
 const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
 
@@ -61,14 +59,14 @@ int main(int argc, const char ** argv) {
     camera = init_camera(M_PI / 2.0f, 1.0f, screen_w / (float)screen_h);
 
     // surface data
-    static const unsigned dimm = 10;
+    static const unsigned dimm = 3;
     int num_surfaces = dimm * dimm + 1;
     surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
 
     for (int x = 0; x < dimm; x++) {
         for (int y = 0; y < dimm; y++) {
-            float x_pos = x - dimm / 2.0f;
-            float y_pos = y - dimm / 2.0f;
+            float x_pos = x - floor(dimm / 2);
+            float y_pos = y - floor(dimm / 2);
             spheres[y * dimm + x] = make_sphere(vector3_init(x_pos, y_pos, 10), 0.5);
         }
     }
@@ -185,7 +183,11 @@ void render_cl(float time) {
 
     glFinish();
     int seed = rand();
-    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 1.0);
+#ifdef __REAL_TIME__
+    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 0.0);
+#else
+    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 2.0);
+#endif
     err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
     err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
