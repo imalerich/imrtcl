@@ -1,8 +1,5 @@
-cl
-cl.exe
-lib
-*.dll
+imrtcl
+bin
 *.o
 *.swp
 *.csv
-*.dll
