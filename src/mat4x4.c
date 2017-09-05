@@ -1,7 +1,4 @@
 //
-//  mat4x4.c
-//  OpenCL-Mac
-//
 //  Created by Ian Malerich on 1/26/16.
 //  Copyright © 2016 Ian Malerich. All rights reserved.
 //

@@ -1,7 +1,4 @@
 //
-//  main.c
-//  OpenCL-Mac
-//
 //  Created by Ian Malerich on 1/16/16.
 //  Copyright © 2016 Ian Malerich. All rights reserved.
 //
