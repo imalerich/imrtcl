@@ -21,8 +21,7 @@ cl_kernel kernel;
 void cl_check_err(int err, const char * msg) {
     // err is not succesfull => print the error and exit
     if (err != CL_SUCCESS) {
-        fprintf(stderr, "err: %d\n", err);
-        fprintf(stderr, "\t%s\n", msg);
+        fprintf(stderr, "%s ... %d\n", msg, err);
         exit(EXIT_FAILURE);
     }
 }
@@ -31,9 +30,12 @@ void init_cl(const char ** sources, int count) {
     int err = CL_SUCCESS;
 
     // get the platform id for this system
-    cl_platform_id platform;
-    err = clGetPlatformIDs(1, &platform, NULL);
+    cl_platform_id platforms[10];
+	cl_uint num_plats = 0;
+    err = clGetPlatformIDs(10, &platforms[0], &num_plats);
     cl_check_err(err, "clGetPlatformIDs(...)");
+
+    cl_platform_id platform = platforms[1];
 
     // connect to the compute device
     err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);

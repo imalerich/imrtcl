@@ -126,8 +126,8 @@ void init_screen_rect() {
 }
 
 void init_shaders() {
-    const char * vs_file_name = "OpenCL-Mac/shaders/simple.vs";
-    const char * fs_file_name = "OpenCL-Mac/shaders/simple.fs";
+    const char * vs_file_name = "../shaders/simple.vs";
+    const char * fs_file_name = "../shaders/simple.fs";
     char * vs_source = read_file(vs_file_name);
     char * fs_source = read_file(fs_file_name);
 

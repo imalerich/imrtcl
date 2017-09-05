@@ -43,7 +43,7 @@ target_link_libraries(imrtcl
     X11
     Xxf86vm
     Xrandr
-    xi
+    Xi
     glut
 )
 

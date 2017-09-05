@@ -23,8 +23,8 @@
 #include "material.h"
 #include "surface.h"
 
-const char * window_title = "RayTracer - OpenCL";
-const char * ray_tracer_filename = "OpenCL-Mac/kernels/ray_tracer.cl";
+const char * window_title = "imrtcl";
+const char * ray_tracer_filename = "../kernels/ray_tracer.cl";
 
 cl_mem tex;
 void set_camera_kernel_args();
@@ -47,8 +47,10 @@ int main(int argc, const char ** argv) {
     init_cl(&ray_tracer_filename, 1);
 
 	// create the OpenCL reference to our OpenGL texture
-	tex = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
-                                       0, screen_tex, &err);
+	// tex = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+    //                                    0, screen_tex, &err);
+	tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+		0, screen_tex, &err);
 	cl_check_err(err, "clCreateFromGLTexture");
 
     /* -----------------------------------------------------------
