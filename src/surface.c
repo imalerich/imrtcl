@@ -17,17 +17,8 @@ void make_sphere(vector4 pos, cl_float radius, float * data) {
 
 void make_plane(vector4 pos, vector4 norm, float * data) {
 	const cl_float cpy[] = {
-		SURFACE_PLANE, pos.x, pos.y, pos.z, 
-		norm.x, norm.y, norm.z
-	};
-
-	memcpy(data, cpy, sizeof(cpy));
-}
-
-void make_aa_cube(vector4 min, vector4 max, float * data) {
-	const cl_float cpy[] = {
-		SURFACE_AA_CUBE, min.x, min.y, min.z,
-		max.x, max.y, max.z
+		SURFACE_PLANE, pos.x, pos.y, pos.z, 1.0f,
+		norm.x, norm.y, norm.z, 0.0f
 	};
 
 	memcpy(data, cpy, sizeof(cpy));

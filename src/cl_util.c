@@ -73,13 +73,14 @@ void init_cl(const char ** sources, int count) {
         length += file_length(sources[i]);
     }
 
-    char * buffer = (char *)malloc(length);
+    char * buffer = (char *)malloc(length+1);
     buffer[0] = '\0';
     for (int i = 0; i < count; i++) {
         char * tmp = read_file(sources[i]);
         strcat(buffer, tmp);
         free(tmp);
     }
+	buffer[length] = '\0';
 
     // create the compute program from 'kernels.cl'
     program = clCreateProgramWithSource(context, 1, (const char **)&buffer, NULL, &err);
@@ -88,7 +89,15 @@ void init_cl(const char ** sources, int count) {
 
     // compile the program for our device
     err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-    cl_check_err(err, "clBuildProgram(...)");
+	if (err == CL_BUILD_PROGRAM_FAILURE) {
+		char buffer[2048];
+		size_t len;
+		err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+		cl_check_err(err, "clGetProgramBuildInfo(...)");
+		printf("%s\n", buffer);
+		exit(EXIT_FAILURE);
+
+	} else { cl_check_err(err, "clBuildProgram(...)"); }
 
     // create the computer kernel in the program we wish to run
     kernel = clCreateKernel(program, "ray_tracer", &err);

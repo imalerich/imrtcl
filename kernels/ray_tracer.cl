@@ -1,12 +1,11 @@
 #define EPSILON 0.001
+#define AMBIENT (0.0f/255.0f)
 
 #define SURFACE_SPHERE 0.0f
 #define SURFACE_PLANE 1.0f
-#define SURFACE_AA_CUBE 2.0f
 
 #define SPHERE_SIZE 5
-#define PLANE_SIZE 7
-#define AA_CUBE_SIZE 7
+#define PLANE_SIZE 9
 
 typedef struct {
     float4 diffuse;
@@ -23,16 +22,21 @@ typedef struct {
  * -------------------- */
 
 float4 color_for_ray(float8 ray, float4 light_pos, __global float * surfaces, __global material * materials,
-		int n_surfaces, int * hit_index, float4 * intersect, float4 * norm, int * seed);
+		int n_surfaces, int * hit_index, float4 * intersect, float4 * norm, uint * seed);
 int intersect_ray_surfaces(float8 ray, __global float * surfaces,
 		int n_surfaces, float4 * intersect, float4 * norm);
+int size_of_surface(__global float * surface_p);
+
+bool intersect_ray_surface(float8 ray, __global float * surface_p, float4 * intersect, float4 * norm);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
+bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm);
 
 float8 calculate_ray(float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
-float4 point_on_sphere(float4 sphere, uint * seed);
 float scalar_for_lighting(float4 l_dir, float4 norm);
 float specular_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
+float4 point_on_sphere(float4 sphere, uint * seed);
+uint rand(uint * seed);
 
 /* --------------------
  * Kernel.
@@ -46,7 +50,7 @@ __kernel void ray_tracer(
         float4 camera_up,
 
         // seed for the random number generator
-        int seed,
+        uint seed,
 
 		// scene information
 		float4 light_pos,
@@ -74,7 +78,7 @@ __kernel void ray_tracer(
     float4 color = (float4)0.0f; // sum of all color samples
 
     // grab all of our lighting samples
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 2; i++) {
 		float4 c = color_for_ray(ray, light_pos, surfaces, materials, n_surfaces, 
 				&hit_index, &intersect, &norm, &seed);
 		
@@ -104,7 +108,7 @@ float4 color_for_ray(
 		int * hit_index,
 		float4 * intersect,
 		float4 * norm,
-		int * seed) {
+		uint * seed) {
 
 	 *hit_index = intersect_ray_surfaces(ray, surfaces, n_surfaces, intersect, norm);
 
@@ -113,25 +117,24 @@ float4 color_for_ray(
 	 	float spec = 0.0;
 
         // check if the light is visible from this point
-        int l_samples = light_pos.w > 0.0 ? 128 : 1;
-	    l_samples = 1; // TODO - Get globe light working.
+        int l_samples = light_pos.w > 0.0 ? 16 : 1;
 	 	for (int l = 0; l < l_samples; l++) {
-        	// float4 sample_pos = point_on_sphere(light_pos, seed);
-	    	float4 sample_pos = light_pos;
+			float4 sample_pos = point_on_sphere(light_pos, seed);
 
 	    	float l_dist = length(sample_pos - *intersect);
 	    	float4 l_dir = normalize(sample_pos - *intersect);
-	    	float sample_d = 10.0f/255.0f;
+	    	float sample_d = AMBIENT;
 	    	float sample_s = 0.0f;
 
         	float4 l_int, l_norm;
         	if (intersect_ray_surfaces((float8)(*intersect, l_dir), 
 						surfaces, n_surfaces, &l_int, &l_norm) < 0 
 					|| length(*intersect - l_int) > l_dist) {
+				float intensity = max((10.0f - l_dist)/10.0f, 0.0f);
 
             	// calculate the lighting components for this point
-                sample_d = max(scalar_for_lighting(l_dir, *norm), sample_d);
-                sample_s = max(specular_for_lighting(ray, l_dir, *norm, materials[*hit_index]), sample_s);
+                sample_d = max(intensity * scalar_for_lighting(l_dir, *norm), sample_d);
+                sample_s = max(intensity * specular_for_lighting(ray, l_dir, *norm, materials[*hit_index]), sample_s);
             }
 	 	 		
              // add this samples contribution to the overall lighting
@@ -161,10 +164,7 @@ int intersect_ray_surfaces(float8 ray, __global float * surfaces,
 
 	 __global float * tmp = surfaces;
 	 for (int i=0; i<n_surfaces; i++) {
-	 	tmp++; // currently everything is a sphere
-	 	float4 sphere = (float4)(tmp[0], tmp[1], tmp[2], tmp[3]);
-
-	 	if (intersect_ray_sphere(ray, sphere, &tmp_i, &tmp_n)) {
+		if (intersect_ray_surface(ray, tmp, &tmp_i, &tmp_n)) {
 	 		float dist = length(tmp_i - ray.lo);
 
 	 		if (min_dist == -1 || dist < min_dist) {
@@ -176,10 +176,40 @@ int intersect_ray_surfaces(float8 ray, __global float * surfaces,
 	 		}
 	 	}
 
-	 	tmp += (SPHERE_SIZE-1);
+	 	tmp += size_of_surface(tmp);
 	 }
 
 	 return hit;
+}
+
+int size_of_surface(__global float * surface_p) {
+	const float surface_id = *surface_p;
+
+	if (fabs(surface_id - SURFACE_SPHERE) < EPSILON) {
+		return SPHERE_SIZE;
+	} else if (fabs(surface_id - SURFACE_PLANE) < EPSILON) {
+		return PLANE_SIZE;
+	}
+	
+	return 0;
+}
+
+bool intersect_ray_surface(float8 ray, __global float * surface_p, float4 * intersect, float4 * norm) {
+	const float surface_id = surface_p[0];
+
+	if (fabs(surface_id - SURFACE_SPHERE) < EPSILON) {
+		//float4 sphere = *((__global float4 *)(surface_p+1));
+		float4 sphere = (float4)(surface_p[1], surface_p[2], surface_p[3], surface_p[4]);
+	 	return intersect_ray_sphere(ray, sphere, intersect, norm);
+
+	} else if (fabs(surface_id - SURFACE_PLANE) < EPSILON) {
+	 	// float8 plane = *((__global float8 *)surface_p);
+		float8 plane = (float8)(surface_p[1], surface_p[2], surface_p[3], surface_p[4],
+				surface_p[5], surface_p[6], surface_p[7], surface_p[8]);
+	 	return intersect_ray_plane(ray, plane, intersect, norm);
+	}
+
+	return false;
 }
 
 /**
@@ -227,6 +257,27 @@ bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 
     }
 }
 
+bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm) {
+	ray.hi = normalize(ray.hi);
+	plane.hi = normalize(plane.hi);
+
+	// the plane and the ray are parallel
+	if (abs(dot(ray.hi, plane.hi) < EPSILON)) {
+		return false;
+	}
+
+	float n = dot(plane.lo - ray.lo, plane.hi);
+	float d = n / dot(ray.hi, plane.hi);
+
+	if (d > EPSILON) {
+		(*intersect) = ray.lo + ray.hi * d;
+		(*norm) = -plane.hi;
+		return true;
+	}
+
+	return false;
+}
+
 /* --------------------
  * Utility Functions.
  * -------------------- */
@@ -263,18 +314,6 @@ float8 calculate_ray (
     return (float8){ camera_pos.xyz, 0.0, dir };
 }
 
-float4 point_on_sphere(float4 sphere, uint * seed) {
-    int mil = 100000;
-    float4 r = (float4){
-        (rand(seed) % mil)/(float)mil - 0.5,
-        (rand(seed) % mil)/(float)mil - 0.5,
-        (rand(seed) % mil)/(float)mil - 0.5,
-        0.0
-    };
-
-    return normalize(r) * (float4)sphere.w + (float4){sphere.xyz, 0.0};
-}
-
 float scalar_for_lighting(float4 l_dir, float4 norm) {
     return max(min(dot(l_dir, normalize(norm)), 1.0f), 0.0f);
 }
@@ -285,3 +324,29 @@ float specular_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat)
     float blinn = dot(b_dir, norm);
     return mat.spec_scalar * pow(blinn, mat.spec_power);
 }
+
+float4 point_on_sphere(float4 sphere, uint * seed) {
+    float mil = pow(10.0f, 6.0f);
+    float4 r = (float4){
+        (rand(seed) % (int)mil)/mil - 0.5,
+        (rand(seed) % (int)mil)/mil - 0.5,
+        (rand(seed) % (int)mil)/mil - 0.5,
+        0.0
+    };
+
+    return normalize(r) * (float4)sphere.w + (float4){sphere.xyz, 0.0};
+}
+
+uint rand(uint * seed) {
+	int screen_w = get_global_size(0);
+	int x_pos = get_global_id(0);
+	int y_pos = get_global_id(1);
+	int id = screen_w * y_pos + x_pos;
+
+	*seed = *seed + id;
+	*seed = (*seed + 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
+	*seed = *seed >> 16;
+
+	return *seed;
+}
+

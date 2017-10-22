@@ -20,8 +20,6 @@
 #include "material.h"
 #include "surface.h"
 
-#define __REAL_TIME__
-
 const char * window_title = "imrtcl";
 const char * ray_tracer_filename = "../kernels/ray_tracer.cl";
 
@@ -59,8 +57,8 @@ int main(int argc, const char ** argv) {
 	 * -------- */
 
     static const unsigned dimm = 3;
-    int num_surfaces = dimm * dimm;
-	size_t surf_size = sizeof(cl_float) * SPHERE_SIZE * num_surfaces;
+    int num_surfaces = dimm * dimm + 1;
+	size_t surf_size = sizeof(cl_float) * (SPHERE_SIZE * (num_surfaces-1) + PLANE_SIZE);
     cl_float * spheres = (cl_float *)malloc(surf_size);
 
 	cl_float * tmp = spheres;
@@ -73,6 +71,9 @@ int main(int argc, const char ** argv) {
 			tmp += SPHERE_SIZE;
         }
     }
+
+	make_plane(vector3_init(0, 0, 10.5), vector3_init(0, 0, 1), tmp);
+	tmp += PLANE_SIZE;
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      surf_size, NULL, &err);
@@ -91,6 +92,7 @@ int main(int argc, const char ** argv) {
 	for (int i=0; i<num_surfaces; i++) {
 		materials[i] = rand_material();
 	}
+	materials[num_surfaces-1] = diffuse_material(vector3_init(1, 0, 0.4));
 
 	cl_mem mat = clCreateBuffer(context, CL_MEM_READ_ONLY,
 			num_surfaces * sizeof(material), NULL, &err);
@@ -147,7 +149,7 @@ int main(int argc, const char ** argv) {
 
 vector4 get_cam_vel() {
     vector4 cam_vel = zero_vector4();
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         { cam_vel.x = 1.0f * time_passed; }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         { cam_vel.x = -1.0f * time_passed; }
@@ -188,13 +190,13 @@ void render_cl(float time) {
     const size_t local[] = {8 * sample_rate, 8 * sample_rate};
 
     glFinish();
-    int seed = rand();
+    unsigned seed = rand();
 #ifdef __REAL_TIME__
-    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 0.0);
+    vector4 light_pos = vector4_init(2 * sin(time), 2 * cos(time), 8.0, 0.0);
 #else
-    vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 2.0);
+    vector4 light_pos = vector4_init(2 * sin(time), 2 * cos(time), 8.0, 2.0);
 #endif
-    err |= clSetKernelArg(kernel, 4, sizeof(int), &seed);
+    err |= clSetKernelArg(kernel, 4, sizeof(unsigned), &seed);
     err  = clSetKernelArg(kernel, 5, sizeof(vector4), &light_pos);
     cl_check_err(err, "clSetKernelArg(...)");
 

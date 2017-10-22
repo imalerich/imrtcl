@@ -28,6 +28,8 @@
 
 #include <GLFW/glfw3native.h>
 
+#define __REAL_TIME__
+
 extern GLFWwindow * window;
 extern unsigned screen_w;
 extern unsigned screen_h;
