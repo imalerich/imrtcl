@@ -121,7 +121,7 @@ float4 color_for_ray(
 	 *hit_index = intersect_ray_surfaces(ray, surfaces, n_surfaces, intersect, norm);
 
 	 float4 light_intersect, light_norm;
-	 if (intersect_ray_sphere(ray, light_pos, &light_intersect, &light_norm)) {
+	 if (light_pos.w > EPSILON && intersect_ray_sphere(ray, light_pos, &light_intersect, &light_norm)) {
 	     float pd = length(*intersect - ray.lo);
 	     float ld = length(light_intersect - ray.lo);
 	     if (ld <= pd) { return (float4)1.0f; }
