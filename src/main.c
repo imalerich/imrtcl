@@ -20,9 +20,10 @@
 #include "material.h"
 #include "surface.h"
 
+#define __REAL_TIME__
+
 const char * window_title = "imrtcl";
-// const char * ray_tracer_filename = "../kernels/ray_tracer.cl";
-const char * ray_tracer_filename = "../kernels/gl_sample.cl";
+const char * ray_tracer_filename = "../kernels/ray_tracer.cl";
 
 cl_mem tex;
 void set_camera_kernel_args();
@@ -45,70 +46,75 @@ int main(int argc, const char ** argv) {
     init_cl(&ray_tracer_filename, 1);
 
 	// create the OpenCL reference to our OpenGL texture
-	tex = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
-                                       0, screen_tex, &err);
-	// tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
-		// 0, screen_tex, &err);
+	// tex = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+    //                                    0, screen_tex, &err);
+	tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+		0, screen_tex, &err);
 	cl_check_err(err, "clCreateFromGLTexture");
-
-    /* -----------------------------------------------------------
-     Main runtime loop. Here we will update an OpenGL texture
-     buffer using OpenCL, then swap the OpenGL display buffers.
-     ----------------------------------------------------------- */
 
     camera = init_camera(M_PI / 2.0f, 1.0f, screen_w / (float)screen_h);
 
-    // surface data
-    static const unsigned dimm = 3;
-    int num_surfaces = dimm * dimm + 1;
-    surface * spheres = (surface *)malloc(sizeof(surface) * num_surfaces);
+	/* --------
+	 * SURFACES
+	 * -------- */
 
+    static const unsigned dimm = 3;
+    int num_surfaces = dimm * dimm;
+	size_t surf_size = sizeof(cl_float) * SPHERE_SIZE * num_surfaces;
+    cl_float * spheres = (cl_float *)malloc(surf_size);
+
+	cl_float * tmp = spheres;
     for (int x = 0; x < dimm; x++) {
         for (int y = 0; y < dimm; y++) {
             float x_pos = x - floor(dimm / 2);
             float y_pos = y - floor(dimm / 2);
-            spheres[y * dimm + x] = make_sphere(vector3_init(x_pos, y_pos, 10), 0.5);
+            make_sphere(vector3_init(x_pos, y_pos, 10), 0.5, tmp);
+
+			tmp += SPHERE_SIZE;
         }
     }
 
-    spheres[dimm * dimm] = make_plane(vector3_init(0, 0, 10.5f), vector3_init(0, 0, -1));
-
-    material * materials = (material *)malloc(sizeof(material) * num_surfaces);
-    for (int i = 0; i < num_surfaces; i++) {
-        materials[i] = rand_material();
-    }
-
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                     num_surfaces * sizeof(surface), NULL, &err);
+                                     surf_size, NULL, &err);
     cl_check_err(err, "clCreateBuffer(...)");
     err = clEnqueueWriteBuffer(command_queue, surfaces, CL_TRUE, 0,
-                               num_surfaces * sizeof(surface), spheres, 0, NULL, NULL);
-    cl_check_err(err, "clEnqueueWriteBuffer(...)");
-
-    cl_mem mat = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                      num_surfaces * sizeof(material), NULL, &err);
-    cl_check_err(err, "clCreateBuffer(...)");
-    err = clEnqueueWriteBuffer(command_queue, mat, CL_TRUE, 0,
-                               num_surfaces * sizeof(material), materials, 0, NULL, NULL);
+                               surf_size, spheres, 0, NULL, NULL);
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
     free(spheres);
-    free(materials);
+
+	/* ---------
+	 * MATERIALS
+	 * --------- */
+
+	material * materials = (material *)malloc(sizeof(material) * num_surfaces);
+	for (int i=0; i<num_surfaces; i++) {
+		materials[i] = rand_material();
+	}
+
+	cl_mem mat = clCreateBuffer(context, CL_MEM_READ_ONLY,
+			num_surfaces * sizeof(material), NULL, &err);
+	cl_check_err(err, "clCreateBuffer(...)");
+	err = clEnqueueWriteBuffer(command_queue, mat, CL_TRUE, 0,
+			num_surfaces * sizeof(material), materials, 0, NULL, NULL);
+	cl_check_err(err, "clEnqueueWriteBuffer(...)");
+
+	free(materials);
 
     // set up our surfaces
-    // err  = clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
-    // err  = clSetKernelArg(kernel, 6, sizeof(cl_mem), &mat);
-    // err |= clSetKernelArg(kernel, 7, sizeof(int), &num_surfaces);
+    err  = clSetKernelArg(kernel, 6, sizeof(cl_mem), &surfaces);
+    err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &mat);
+    err |= clSetKernelArg(kernel, 8, sizeof(int), &num_surfaces);
 
     // set the output reference
-    err |= clSetKernelArg(kernel, 0, sizeof(cl_mem), &tex);
+    err |= clSetKernelArg(kernel, 9, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
     float time = 1.8f;
 
 #ifndef __REAL_TIME__
     glfwSetTime(0.0f);
-    // set_camera_kernel_args();
+    set_camera_kernel_args();
     render_cl(time = 3.5);
     printf("Rendered in %f seconds.\n", glfwGetTime());
 #endif
@@ -141,7 +147,7 @@ int main(int argc, const char ** argv) {
 
 vector4 get_cam_vel() {
     vector4 cam_vel = zero_vector4();
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         { cam_vel.x = 1.0f * time_passed; }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         { cam_vel.x = -1.0f * time_passed; }
@@ -188,8 +194,8 @@ void render_cl(float time) {
 #else
     vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 2.0);
 #endif
-    // err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
-    // err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
+    err |= clSetKernelArg(kernel, 4, sizeof(int), &seed);
+    err  = clSetKernelArg(kernel, 5, sizeof(vector4), &light_pos);
     cl_check_err(err, "clSetKernelArg(...)");
 
     err = clEnqueueAcquireGLObjects(command_queue, 1, &tex, 0, 0, NULL);

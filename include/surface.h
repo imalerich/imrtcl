@@ -9,44 +9,18 @@
 #include "vector.h"
 #include "cl_util.h"
 
-#define SURFACE_SPHERE  0
-#define SURFACE_PLANE   1
-#define SURFACE_AA_CUBE 2
+#define SURFACE_SPHERE  0.0f
+#define SURFACE_PLANE   1.0f
+#define SURFACE_AA_CUBE 2.0f
 
-/**
- Contains a representation of some shape.
- This struct will fit into the surface
- structure that is used by the ray tracer
- kernel.
- */
-typedef struct __attribute__ ((packed)) {
-    vector4 data_lo;
-    vector4 data_hi;
-    cl_int shape_id;
-} surface;
+#define SPHERE_SIZE 5
+#define PLANE_SIZE 7
+#define AA_CUBE_SIZE 7
 
-/**
- Creates a surface representation of a sphere.
- \param pos .xyz coordinate of the sphere, .w is ignored.
- \param radius The radius of the input sphere.
- \return The surface representation.
- */
-surface make_sphere(vector4 pos, float radius);
+void make_sphere(vector4 pos, float radius, cl_float * data);
 
-/**
- Creates a surface representation of a plane.
- \param pos A coordinate on the plane.
- \param norm Normal vector to the plane.
- \return The surface representation.
- */
-surface make_plane(vector4 pos, vector4 norm);
+void make_plane(vector4 pos, vector4 norm, cl_float * data);
 
-/**
- Creates a surface representation of an axis-aligned cube.
- \param min Minimum coordinate of the cube.
- \param max Maximum coordinate of the cube.
- \return The surface representation.
- */
-surface make_aa_cube(vector4 min, vector4 max);
+void make_aa_cube(vector4 min, vector4 max, cl_float * data);
 
 #endif

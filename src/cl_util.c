@@ -91,7 +91,7 @@ void init_cl(const char ** sources, int count) {
     cl_check_err(err, "clBuildProgram(...)");
 
     // create the computer kernel in the program we wish to run
-    kernel = clCreateKernel(program, "gl_sample", &err);
+    kernel = clCreateKernel(program, "ray_tracer", &err);
     cl_check_err(err, "clCreateKernel(...)");
 }
 

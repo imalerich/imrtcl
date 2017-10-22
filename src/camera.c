@@ -11,10 +11,10 @@ cam_data init_camera(float field_of_view, float near_dist, float aspect_ratio) {
     float half_height = half_width / aspect_ratio;
 
     return (cam_data) {
-        vector3_init(0, 0, 0),
-        vector3_init(0, 0, near_dist),
-        vector3_init(half_width, 0, 0),
-        vector3_init(0, half_height, 0)
+        vector3_init(0, 0, 0), // position
+        vector3_init(0, 0, near_dist), // look
+        vector3_init(half_width, 0, 0), // right
+        vector3_init(0, half_height, 0) // up
     };
 }
 
