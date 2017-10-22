@@ -21,13 +21,13 @@ typedef struct {
  * Function Prototypes.
  * -------------------- */
 
-float4 color_for_ray(float8 ray, float4 light_pos, __global float * surfaces, __global material * materials,
+float4 color_for_ray(float8 ray, float4 light_pos, __read_only __local float * surfaces, __local material * materials,
 		int n_surfaces, int * hit_index, float4 * intersect, float4 * norm, uint * seed);
-int intersect_ray_surfaces(float8 ray, __global float * surfaces,
+int intersect_ray_surfaces(float8 ray, __read_only __local float * surfaces,
 		int n_surfaces, float4 * intersect, float4 * norm);
-int size_of_surface(__global float * surface_p);
+int size_of_surface(__read_only __local float * surface_p);
 
-bool intersect_ray_surface(float8 ray, __global float * surface_p, float4 * intersect, float4 * norm);
+bool intersect_ray_surface(float8 ray, __read_only __local float * surface_p, float4 * intersect, float4 * norm);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm);
 
@@ -50,17 +50,24 @@ __kernel void ray_tracer(
         float4 camera_up,
 
         // seed for the random number generator
-        uint seed,
+        uint random_seed,
 
 		// scene information
 		float4 light_pos,
-		__global float * surfaces,
-        __global material * materials,
-		int n_surfaces,
+		__read_only __global float * g_surfaces,
+        __read_only __global material * g_materials,
+		__local float * surfaces,
+		__local material * materials,
+		int n_surfaces, int n_surf_vals, int n_mat_vals,
 
         // kernel output
         __write_only image2d_t output
 	) {
+
+	event_t es = async_work_group_copy(surfaces, g_surfaces, n_surf_vals, 0);
+	event_t em = async_work_group_copy((__local float *)materials, (__global float *)g_materials, n_mat_vals, 0);
+	wait_group_events(1, &es);
+	wait_group_events(1, &em);
 
     // the output image resolution -> global work size
 	int screen_w = get_global_size(0);
@@ -70,6 +77,7 @@ __kernel void ray_tracer(
 	int x_pos = get_global_id(0);
 	int y_pos = get_global_id(1);
 
+	uint seed = random_seed;
 	int hit_index;
     float8 ray = calculate_ray(camera_pos, camera_look, camera_right, camera_up);
 	float4 intersect, norm; // surface intersection information
@@ -102,8 +110,8 @@ __kernel void ray_tracer(
 float4 color_for_ray(
 		float8 ray,
 		float4 light_pos,
-		__global float * surfaces,
-		__global material * materials,
+		__read_only __local float * surfaces,
+		__read_only __local material * materials,
 		int n_surfaces,
 		int * hit_index,
 		float4 * intersect,
@@ -112,12 +120,19 @@ float4 color_for_ray(
 
 	 *hit_index = intersect_ray_surfaces(ray, surfaces, n_surfaces, intersect, norm);
 
+	 float4 light_intersect, light_norm;
+	 if (intersect_ray_sphere(ray, light_pos, &light_intersect, &light_norm)) {
+	     float pd = length(*intersect - ray.lo);
+	     float ld = length(light_intersect - ray.lo);
+	     if (ld <= pd) { return (float4)1.0f; }
+	 }
+
 	 if (*hit_index >= 0) {
 	 	float diff = 0.0;
 	 	float spec = 0.0;
 
         // check if the light is visible from this point
-        int l_samples = light_pos.w > 0.0 ? 16 : 1;
+        int l_samples = light_pos.w > EPSILON ? 32 : 1;
 	 	for (int l = 0; l < l_samples; l++) {
 			float4 sample_pos = point_on_sphere(light_pos, seed);
 
@@ -154,7 +169,7 @@ float4 color_for_ray(
  * Ray Tests.
  * -------------------- */
 
-int intersect_ray_surfaces(float8 ray, __global float * surfaces,
+int intersect_ray_surfaces(float8 ray, __read_only __local float * surfaces,
 		int n_surfaces, float4 * intersect, float4 * norm) {
 
 	 // information about the current nearest surfaces
@@ -162,7 +177,7 @@ int intersect_ray_surfaces(float8 ray, __global float * surfaces,
 	 float min_dist = -1;
 	 float4 tmp_i, tmp_n;
 
-	 __global float * tmp = surfaces;
+	 __read_only __local float * tmp = surfaces;
 	 for (int i=0; i<n_surfaces; i++) {
 		if (intersect_ray_surface(ray, tmp, &tmp_i, &tmp_n)) {
 	 		float dist = length(tmp_i - ray.lo);
@@ -182,7 +197,7 @@ int intersect_ray_surfaces(float8 ray, __global float * surfaces,
 	 return hit;
 }
 
-int size_of_surface(__global float * surface_p) {
+int size_of_surface(__read_only __local float * surface_p) {
 	const float surface_id = *surface_p;
 
 	if (fabs(surface_id - SURFACE_SPHERE) < EPSILON) {
@@ -194,18 +209,17 @@ int size_of_surface(__global float * surface_p) {
 	return 0;
 }
 
-bool intersect_ray_surface(float8 ray, __global float * surface_p, float4 * intersect, float4 * norm) {
+bool intersect_ray_surface(float8 ray, __read_only __local float * surface_p, float4 * intersect, float4 * norm) {
 	const float surface_id = surface_p[0];
+	++surface_p;
 
 	if (fabs(surface_id - SURFACE_SPHERE) < EPSILON) {
-		//float4 sphere = *((__global float4 *)(surface_p+1));
-		float4 sphere = (float4)(surface_p[1], surface_p[2], surface_p[3], surface_p[4]);
+		float4 sphere = (float4)(surface_p[0], surface_p[1], surface_p[2], surface_p[3]);
 	 	return intersect_ray_sphere(ray, sphere, intersect, norm);
 
 	} else if (fabs(surface_id - SURFACE_PLANE) < EPSILON) {
-	 	// float8 plane = *((__global float8 *)surface_p);
-		float8 plane = (float8)(surface_p[1], surface_p[2], surface_p[3], surface_p[4],
-				surface_p[5], surface_p[6], surface_p[7], surface_p[8]);
+		float8 plane = (float8)(surface_p[0], surface_p[1], surface_p[2], surface_p[3],
+		 		surface_p[4], surface_p[5], surface_p[6], surface_p[7]);
 	 	return intersect_ray_plane(ray, plane, intersect, norm);
 	}
 
@@ -326,7 +340,7 @@ float specular_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat)
 }
 
 float4 point_on_sphere(float4 sphere, uint * seed) {
-    float mil = pow(10.0f, 6.0f);
+    float mil = 100000.0f;
     float4 r = (float4){
         (rand(seed) % (int)mil)/mil - 0.5,
         (rand(seed) % (int)mil)/mil - 0.5,
@@ -334,7 +348,7 @@ float4 point_on_sphere(float4 sphere, uint * seed) {
         0.0
     };
 
-    return normalize(r) * (float4)sphere.w + (float4){sphere.xyz, 0.0};
+    return (normalize(r) * (float4)sphere.w) + (float4){sphere.xyz, 1.0};
 }
 
 uint rand(uint * seed) {
@@ -344,7 +358,7 @@ uint rand(uint * seed) {
 	int id = screen_w * y_pos + x_pos;
 
 	*seed = *seed + id;
-	*seed = (*seed + 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
+	*seed = (*seed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
 	*seed = *seed >> 16;
 
 	return *seed;

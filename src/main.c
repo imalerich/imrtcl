@@ -57,7 +57,7 @@ int main(int argc, const char ** argv) {
 	 * -------- */
 
     static const unsigned dimm = 3;
-    int num_surfaces = dimm * dimm + 1;
+    int num_surfaces = dimm * dimm + 1, surf_val_count = 0;
 	size_t surf_size = sizeof(cl_float) * (SPHERE_SIZE * (num_surfaces-1) + PLANE_SIZE);
     cl_float * spheres = (cl_float *)malloc(surf_size);
 
@@ -68,12 +68,12 @@ int main(int argc, const char ** argv) {
             float y_pos = y - floor(dimm / 2);
             make_sphere(vector3_init(x_pos, y_pos, 10), 0.5, tmp);
 
-			tmp += SPHERE_SIZE;
+			tmp += SPHERE_SIZE; surf_val_count += SPHERE_SIZE;
         }
     }
 
 	make_plane(vector3_init(0, 0, 10.5), vector3_init(0, 0, 1), tmp);
-	tmp += PLANE_SIZE;
+	tmp += PLANE_SIZE; surf_val_count += PLANE_SIZE;
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      surf_size, NULL, &err);
@@ -88,6 +88,7 @@ int main(int argc, const char ** argv) {
 	 * MATERIALS
 	 * --------- */
 
+	int mat_val_count = num_surfaces * sizeof(material) / sizeof(cl_float);
 	material * materials = (material *)malloc(sizeof(material) * num_surfaces);
 	for (int i=0; i<num_surfaces; i++) {
 		materials[i] = rand_material();
@@ -106,10 +107,14 @@ int main(int argc, const char ** argv) {
     // set up our surfaces
     err  = clSetKernelArg(kernel, 6, sizeof(cl_mem), &surfaces);
     err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &mat);
-    err |= clSetKernelArg(kernel, 8, sizeof(int), &num_surfaces);
+	err |= clSetKernelArg(kernel, 8, surf_size, NULL);
+	err |= clSetKernelArg(kernel, 9, num_surfaces * sizeof(material), NULL);
+    err |= clSetKernelArg(kernel, 10, sizeof(int), &num_surfaces);
+    err |= clSetKernelArg(kernel, 11, sizeof(int), &surf_val_count);
+    err |= clSetKernelArg(kernel, 12, sizeof(int), &mat_val_count);
 
     // set the output reference
-    err |= clSetKernelArg(kernel, 9, sizeof(cl_mem), &tex);
+    err |= clSetKernelArg(kernel, 13, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
     float time = 1.8f;
@@ -194,7 +199,7 @@ void render_cl(float time) {
 #ifdef __REAL_TIME__
     vector4 light_pos = vector4_init(2 * sin(time), 2 * cos(time), 8.0, 0.0);
 #else
-    vector4 light_pos = vector4_init(2 * sin(time), 2 * cos(time), 8.0, 2.0);
+    vector4 light_pos = vector4_init(2 * sin(time), 2 * cos(time), 8.0, 0.5);
 #endif
     err |= clSetKernelArg(kernel, 4, sizeof(unsigned), &seed);
     err  = clSetKernelArg(kernel, 5, sizeof(vector4), &light_pos);
