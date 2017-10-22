@@ -21,7 +21,8 @@
 #include "surface.h"
 
 const char * window_title = "imrtcl";
-const char * ray_tracer_filename = "../kernels/ray_tracer.cl";
+// const char * ray_tracer_filename = "../kernels/ray_tracer.cl";
+const char * ray_tracer_filename = "../kernels/gl_sample.cl";
 
 cl_mem tex;
 void set_camera_kernel_args();
@@ -44,10 +45,10 @@ int main(int argc, const char ** argv) {
     init_cl(&ray_tracer_filename, 1);
 
 	// create the OpenCL reference to our OpenGL texture
-	// tex = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
-    //                                    0, screen_tex, &err);
-	tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
-		0, screen_tex, &err);
+	tex = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+                                       0, screen_tex, &err);
+	// tex = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D,
+		// 0, screen_tex, &err);
 	cl_check_err(err, "clCreateFromGLTexture");
 
     /* -----------------------------------------------------------
@@ -95,31 +96,31 @@ int main(int argc, const char ** argv) {
     free(materials);
 
     // set up our surfaces
-    err  = clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
-    err  = clSetKernelArg(kernel, 6, sizeof(cl_mem), &mat);
-    err |= clSetKernelArg(kernel, 7, sizeof(int), &num_surfaces);
+    // err  = clSetKernelArg(kernel, 5, sizeof(cl_mem), &surfaces);
+    // err  = clSetKernelArg(kernel, 6, sizeof(cl_mem), &mat);
+    // err |= clSetKernelArg(kernel, 7, sizeof(int), &num_surfaces);
 
     // set the output reference
-    err |= clSetKernelArg(kernel, 9, sizeof(cl_mem), &tex);
+    err |= clSetKernelArg(kernel, 0, sizeof(cl_mem), &tex);
     cl_check_err(err, "clSetKernelArg(...)");
 
     float time = 1.8f;
 
 #ifndef __REAL_TIME__
     glfwSetTime(0.0f);
-    set_camera_kernel_args();
+    // set_camera_kernel_args();
     render_cl(time = 3.5);
     printf("Rendered in %f seconds.\n", glfwGetTime());
 #endif
 
     glfwSetTime(0.0f);
     while (!glfwWindowShouldClose(window)) {
+#ifdef __REAL_TIME__
         // update the camera position from the input
         move_camera(&camera, get_cam_vel());
         rotate_camera(&camera, get_cam_rot());
         set_camera_kernel_args();
 
-#ifdef __REAL_TIME__
         render_cl(time += 2/60.0f);
 #endif
         present_gl();
@@ -187,8 +188,8 @@ void render_cl(float time) {
 #else
     vector4 light_pos = vector4_init(8 * sin(time), 8 * cos(time), 0.0, 2.0);
 #endif
-    err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
-    err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
+    // err  = clSetKernelArg(kernel, 4, sizeof(vector4), &light_pos);
+    // err |= clSetKernelArg(kernel, 8, sizeof(int), &seed);
     cl_check_err(err, "clSetKernelArg(...)");
 
     err = clEnqueueAcquireGLObjects(command_queue, 1, &tex, 0, 0, NULL);
@@ -204,7 +205,7 @@ void render_cl(float time) {
 
 void present_gl() {
     // refresh the OpenGL context with the new texture updates
-    glClearColor(0, 0, 0, 1);
+    glClearColor(1, 0.2, 0.5, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
     update_screen();

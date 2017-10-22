@@ -1,5 +1,4 @@
 __kernel void gl_sample(
-        float delta,
         __write_only image2d_t output
 	) {
 
@@ -9,9 +8,9 @@ __kernel void gl_sample(
 	int x_pos = get_global_id(0);
 	int y_pos = get_global_id(1);
 
-	float4 val = (float4){delta * x_pos/(float)screen_w,
-                          delta * y_pos/(float)screen_h,
-                          delta,
+	float4 val = (float4){x_pos/(float)screen_w,
+                          y_pos/(float)screen_h,
+                          1.0,
                           1.0};
     write_imagef(output, (int2){x_pos, y_pos}, val);
 }

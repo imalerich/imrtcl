@@ -32,7 +32,7 @@ void init_cl(const char ** sources, int count) {
     err = clGetPlatformIDs(10, &platforms[0], &num_plats);
     cl_check_err(err, "clGetPlatformIDs(...)");
 
-    cl_platform_id platform = platforms[1];
+    cl_platform_id platform = platforms[0];
 
     // connect to the compute device
     err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);
@@ -91,7 +91,7 @@ void init_cl(const char ** sources, int count) {
     cl_check_err(err, "clBuildProgram(...)");
 
     // create the computer kernel in the program we wish to run
-    kernel = clCreateKernel(program, "ray_tracer", &err);
+    kernel = clCreateKernel(program, "gl_sample", &err);
     cl_check_err(err, "clCreateKernel(...)");
 }
 
