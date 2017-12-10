@@ -30,12 +30,14 @@ add_executable(imrtcl
     src/material.c
     src/surface.c
     src/vector.c
+	src/model.c
 )
 
 # Link Allegro with our library
 
 target_link_libraries(imrtcl
     OpenCL
+	assimp
     glfw
     GLEW
     GL

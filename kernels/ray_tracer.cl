@@ -1,11 +1,13 @@
 #define EPSILON 0.001
 #define AMBIENT (0.0f/255.0f)
 
-#define SURFACE_SPHERE 0.0f
-#define SURFACE_PLANE 1.0f
+#define SURFACE_SPHERE  	0.0f
+#define SURFACE_PLANE   	1.0f
+#define SURFACE_TRIANGLE	2.0f
 
 #define SPHERE_SIZE 5
 #define PLANE_SIZE 9
+#define TRIANGLE_SIZE 13
 
 typedef struct {
     float4 diffuse;
@@ -30,12 +32,14 @@ int size_of_surface(__read_only __local float * surface_p);
 bool intersect_ray_surface(float8 ray, __read_only __local float * surface_p, float4 * intersect, float4 * norm);
 bool intersect_ray_sphere(float8 ray, float4 sphere, float4 * intersect, float4 * norm);
 bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * norm);
+bool intersect_ray_triangle(float8 ray, float4 p1, float4 p2, float4 p3, float4 * intersect, float4 * norm);
 
 float8 calculate_ray(float4 camera_pos, float4 camera_look,
         float4 camera_right, float4 camera_up);
 float scalar_for_lighting(float4 l_dir, float4 norm);
 float specular_for_lighting(float8 ray, float4 l_dir, float4 norm, material mat);
 float4 point_on_sphere(float4 sphere, uint * seed);
+float4 bary_centric(float4 P, float4 p1, float4 p2, float4 p3);
 uint rand(uint * seed);
 
 /* --------------------
@@ -145,7 +149,7 @@ float4 color_for_ray(
         	if (intersect_ray_surfaces((float8)(*intersect, l_dir), 
 						surfaces, n_surfaces, &l_int, &l_norm) < 0 
 					|| length(*intersect - l_int) > l_dist) {
-				float intensity = max((10.0f - l_dist)/10.0f, 0.0f);
+				float intensity = max((15.0f - l_dist)/15.0f, 0.0f);
 
             	// calculate the lighting components for this point
                 sample_d = max(intensity * scalar_for_lighting(l_dir, *norm), sample_d);
@@ -204,7 +208,9 @@ int size_of_surface(__read_only __local float * surface_p) {
 		return SPHERE_SIZE;
 	} else if (fabs(surface_id - SURFACE_PLANE) < EPSILON) {
 		return PLANE_SIZE;
-	}
+	} else if (fabs(surface_id - SURFACE_TRIANGLE) < EPSILON) {
+		return TRIANGLE_SIZE;
+	} 
 	
 	return 0;
 }
@@ -221,6 +227,15 @@ bool intersect_ray_surface(float8 ray, __read_only __local float * surface_p, fl
 		float8 plane = (float8)(surface_p[0], surface_p[1], surface_p[2], surface_p[3],
 		 		surface_p[4], surface_p[5], surface_p[6], surface_p[7]);
 	 	return intersect_ray_plane(ray, plane, intersect, norm);
+
+	} else if (fabs(surface_id - SURFACE_TRIANGLE) < EPSILON) {
+		float4 p1 = (float4)(surface_p[0], surface_p[1], surface_p[2], surface_p[3]);
+		float4 p2 = (float4)(surface_p[4], surface_p[5], surface_p[6], surface_p[7]);
+		float4 p3 = (float4)(surface_p[8], surface_p[9], surface_p[10], surface_p[11]);
+		if (!intersect_ray_triangle(ray, p1, p2, p3, intersect, norm)) {
+			return intersect_ray_triangle(ray, p1, p3, p2, intersect, norm);
+		} else { return true; }
+
 	}
 
 	return false;
@@ -276,7 +291,7 @@ bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * 
 	plane.hi = normalize(plane.hi);
 
 	// the plane and the ray are parallel
-	if (abs(dot(ray.hi, plane.hi) < EPSILON)) {
+	if (-EPSILON < dot(ray.hi, plane.hi) < EPSILON) {
 		return false;
 	}
 
@@ -286,6 +301,39 @@ bool intersect_ray_plane(float8 ray, float8 plane, float4 * intersect, float4 * 
 	if (d > EPSILON) {
 		(*intersect) = ray.lo + ray.hi * d;
 		(*norm) = -plane.hi;
+		return true;
+	}
+
+	return false;
+}
+
+bool intersect_ray_triangle(float8 ray, 
+		float4 p1, float4 p2, float4 p3, 
+		float4 * intersect, float4 * norm) {
+	ray.hi = normalize(ray.hi);
+
+	// normal of the plane on which this triagle lies
+	float4 N = normalize(cross((p2 - p1), (p3 - p1)));
+
+	// the plane and the ray are parallel
+	if (-EPSILON < dot(ray.hi, N) < EPSILON) {
+		return false;
+	}
+
+	// calculate where the plane intersects the ray
+	float n = dot(p1 - ray.lo, N);
+	float d = n / dot(ray.hi, N);
+	if (d < EPSILON) { return false; }
+	float4 P = ray.lo + ray.hi * d;
+
+	// an intersection occurs if P lies on the input triangle
+	float4 bary = bary_centric(P, p1, p2, p3);
+
+	// if all barycentric coordinates are nonnegitave
+	// than the point lies on the triangle
+	if (bary.x >= 0.0 && bary.y >= 0.0 && bary.z >= 0.0) {
+		(*intersect) = P;
+		(*norm) = -N;
 		return true;
 	}
 
@@ -349,6 +397,30 @@ float4 point_on_sphere(float4 sphere, uint * seed) {
     };
 
     return (normalize(r) * (float4)sphere.w) + (float4){sphere.xyz, 1.0};
+}
+
+float4 bary_centric(float4 P, float4 p1, float4 p2, float4 p3) {
+	float4 R = P - p1;
+	float4 Q1 = p2 - p1;
+	float4 Q2 = p3 - p1;
+
+	// a, b, c, d form a 2x2 matrix
+	// OpenCL doesn't have built in matrix operations
+	// apparently, but since our system is small
+	// doing the work by hand isn't too bad
+	float a = dot(Q1, Q1);
+	float b = dot(Q1, Q2);
+	float c = b;
+	float d = dot(Q2, Q2);
+
+	float det = (a*d) - (b*c);
+	if (det == 0) { return (float4)(-1.0, -1.0, -1.0, -1.0); }
+
+	float2 RQ = (float2)(dot(R, Q1), dot(R, Q2));
+	float w2 = dot((float2)(d/det, -b/det), RQ);
+	float w3 = dot((float2)(-c/det, a/det), RQ);
+	float w1 = 1 - w2 - w3;
+	return (float4)(w1, w2, w3, 0.0);
 }
 
 uint rand(uint * seed) {

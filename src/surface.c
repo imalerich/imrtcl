@@ -23,3 +23,14 @@ void make_plane(vector4 pos, vector4 norm, float * data) {
 
 	memcpy(data, cpy, sizeof(cpy));
 }
+
+void make_triangle(vector4 p1, vector4 p2, vector4 p3, cl_float * data) {
+	const cl_float cpy[] = {
+		SURFACE_TRIANGLE,
+		p1.x, p1.y, p1.z, 1.0,
+		p2.x, p2.y, p2.z, 1.0,
+		p3.x, p3.y, p3.z, 1.0
+	};
+
+	memcpy(data, cpy, sizeof(cpy));
+}

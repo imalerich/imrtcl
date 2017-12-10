@@ -15,10 +15,12 @@
 
 #include "gl_util.h"
 #include "cl_util.h"
-#include "camera.h"
-#include "vector.h"
+
 #include "material.h"
 #include "surface.h"
+#include "camera.h"
+#include "vector.h"
+#include "model.h"
 
 const char * window_title = "imrtcl";
 const char * ray_tracer_filename = "../kernels/ray_tracer.cl";
@@ -56,33 +58,19 @@ int main(int argc, const char ** argv) {
 	 * SURFACES
 	 * -------- */
 
-    static const unsigned dimm = 3;
-    int num_surfaces = dimm * dimm + 1, surf_val_count = 0;
-	size_t surf_size = sizeof(cl_float) * (SPHERE_SIZE * (num_surfaces-1) + PLANE_SIZE);
-    cl_float * spheres = (cl_float *)malloc(surf_size);
-
-	cl_float * tmp = spheres;
-    for (int x = 0; x < dimm; x++) {
-        for (int y = 0; y < dimm; y++) {
-            float x_pos = x - floor(dimm / 2);
-            float y_pos = y - floor(dimm / 2);
-            make_sphere(vector3_init(x_pos, y_pos, 10), 0.5, tmp);
-
-			tmp += SPHERE_SIZE; surf_val_count += SPHERE_SIZE;
-        }
-    }
-
-	make_plane(vector3_init(0, 0, 10.5), vector3_init(0, 0, 1), tmp);
-	tmp += PLANE_SIZE; surf_val_count += PLANE_SIZE;
+    size_t num_surfaces = 0;
+    cl_float * mesh = importModel("../models/plane.obj", &num_surfaces);
+	size_t surf_val_count = TRIANGLE_SIZE * num_surfaces;
+	size_t surf_size = sizeof(cl_float) * surf_val_count;
 
     cl_mem surfaces = clCreateBuffer(context, CL_MEM_READ_ONLY,
                                      surf_size, NULL, &err);
     cl_check_err(err, "clCreateBuffer(...)");
     err = clEnqueueWriteBuffer(command_queue, surfaces, CL_TRUE, 0,
-                               surf_size, spheres, 0, NULL, NULL);
+                               surf_size, mesh, 0, NULL, NULL);
     cl_check_err(err, "clEnqueueWriteBuffer(...)");
 
-    free(spheres);
+    free(mesh);
 
 	/* ---------
 	 * MATERIALS
@@ -90,10 +78,10 @@ int main(int argc, const char ** argv) {
 
 	int mat_val_count = num_surfaces * sizeof(material) / sizeof(cl_float);
 	material * materials = (material *)malloc(sizeof(material) * num_surfaces);
+	materials[0] = rand_material();
 	for (int i=0; i<num_surfaces; i++) {
-		materials[i] = rand_material();
+		materials[i] = materials[i-1];
 	}
-	materials[num_surfaces-1] = diffuse_material(vector3_init(1, 0, 0.4));
 
 	cl_mem mat = clCreateBuffer(context, CL_MEM_READ_ONLY,
 			num_surfaces * sizeof(material), NULL, &err);
