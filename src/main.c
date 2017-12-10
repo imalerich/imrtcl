@@ -59,7 +59,7 @@ int main(int argc, const char ** argv) {
 	 * -------- */
 
     size_t num_surfaces = 0;
-    cl_float * mesh = importModel("../models/plane.obj", &num_surfaces);
+    cl_float * mesh = importModel("../models/box.obj", &num_surfaces);
 	size_t surf_val_count = TRIANGLE_SIZE * num_surfaces;
 	size_t surf_size = sizeof(cl_float) * surf_val_count;
 
@@ -78,9 +78,8 @@ int main(int argc, const char ** argv) {
 
 	int mat_val_count = num_surfaces * sizeof(material) / sizeof(cl_float);
 	material * materials = (material *)malloc(sizeof(material) * num_surfaces);
-	materials[0] = rand_material();
 	for (int i=0; i<num_surfaces; i++) {
-		materials[i] = materials[i-1];
+		materials[i] = rand_material();
 	}
 
 	cl_mem mat = clCreateBuffer(context, CL_MEM_READ_ONLY,

@@ -1,5 +1,5 @@
 #define EPSILON 0.001
-#define AMBIENT (0.0f/255.0f)
+#define AMBIENT (20.0f/255.0f)
 
 #define SURFACE_SPHERE  	0.0f
 #define SURFACE_PLANE   	1.0f
