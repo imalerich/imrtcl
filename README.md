@@ -2,7 +2,7 @@
 
 GPU accelerated Ray Tracer.
 
-![alt tag](https://raw.githubusercontent.com/imalerich/imrtcl/master/doc/output.png)
+![alt tag](https://raw.githubusercontent.com/imalerich/imrtcl/master/docs/output.png)
 
 ## Dependencies
 
